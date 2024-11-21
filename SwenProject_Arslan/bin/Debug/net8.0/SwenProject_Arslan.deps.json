@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "SwenProject_Arslan/1.0.0": {
+        "runtime": {
+          "SwenProject_Arslan.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SwenProject_Arslan/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

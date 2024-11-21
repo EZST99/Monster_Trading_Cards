@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\irema\\OneDrive\\Desktop\\Dokumente\\FHTW\\3.Semester\\SWEN1\\SwenProject_Arslan\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{98B04D86-9A64-4FAD-A183-FB0EB1582B80}|SwenProject_Arslan\\SwenProject_Arslan.csproj|c:\\users\\irema\\onedrive\\desktop\\dokumente\\fhtw\\3.semester\\swen1\\swenproject_arslan\\swenproject_arslan\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{98B04D86-9A64-4FAD-A183-FB0EB1582B80}|SwenProject_Arslan\\SwenProject_Arslan.csproj|solutionrelative:swenproject_arslan\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\irema\\OneDrive\\Desktop\\Dokumente\\FHTW\\3.Semester\\SWEN1\\SwenProject_Arslan\\SwenProject_Arslan\\Program.cs",
+              "RelativeDocumentMoniker": "SwenProject_Arslan\\Program.cs",
+              "ToolTip": "C:\\Users\\irema\\OneDrive\\Desktop\\Dokumente\\FHTW\\3.Semester\\SWEN1\\SwenProject_Arslan\\SwenProject_Arslan\\Program.cs*",
+              "RelativeToolTip": "SwenProject_Arslan\\Program.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-11T15:23:52.113Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

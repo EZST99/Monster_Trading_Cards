@@ -1,0 +1,14 @@
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\bin\Debug\net8.0\SwenProject_Arslan.exe
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\bin\Debug\net8.0\SwenProject_Arslan.deps.json
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\bin\Debug\net8.0\SwenProject_Arslan.runtimeconfig.json
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\bin\Debug\net8.0\SwenProject_Arslan.dll
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\bin\Debug\net8.0\SwenProject_Arslan.pdb
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.AssemblyInfoInputs.cache
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.AssemblyInfo.cs
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.csproj.CoreCompileInputs.cache
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.dll
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\refint\SwenProject_Arslan.dll
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.pdb
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.genruntimeconfig.cache
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\ref\SwenProject_Arslan.dll
