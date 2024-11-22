@@ -12,37 +12,16 @@ namespace FHTW.Swen1.Swamp
     /// <summary>This class represents a user.</summary>
     public sealed class User
     {
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // private static members                                                                                           //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>Currently holds the system users.</summary>
-        /// <remarks>Is to be removed by database implementation later.</remarks>
         private static Dictionary<string, User> _Users = new();
-
-
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // constructors                                                                                                     //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>Creates a new instance of this class.</summary>
-        public User()
-        {}
-
-
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public properties                                                                                                //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>Gets the user name.</summary>
         public string UserName { get; private set; }
         public string PasswordHash { get;  private set; }
-        public int Coins { get; private set; }
+        public int Coins { get; set; }
+        public int ELO { get; set; }
         public List<ICard> Stack { get; private set; }
         public List<ICard> Deck { get; private set; }
 
+        public User()
+        {}
         
         public static string HashPassword(string password)
         {
@@ -64,15 +43,7 @@ namespace FHTW.Swen1.Swamp
 
             return computedHash.SequenceEqual(hash);
         }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public methods                                                                                                   //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        /// <summary>Saves changes to the user object.</summary>
-        /// <param name="token">Token of the session trying to modify the object.</param>
-        /// <exception cref="SecurityException">Thrown in case of an unauthorized attempt to modify data.</exception>
-        /// <exception cref="AuthenticationException">Thrown when the token is invalid.</exception>
         public void Save(string token)
         {
             (bool Success, User? User) auth = Token.Authenticate(token);
@@ -86,19 +57,7 @@ namespace FHTW.Swen1.Swamp
             }
             else { new AuthenticationException("Not authenticated."); }
         }
-
-
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public static methods                                                                                            //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        /// <summary>Creates a user.</summary>
-        /// <param name="userName">User name.</param>
-        /// <param name="password">Password.</param>
-        /// <param name="fullName">Full name.</param>
-        /// <param name="eMail">E-mail addresss.</param>
-        /// <exception cref="UserException">Thrown when the user name already exists.</exception>
         public static bool Create(string userName, string password)
         {
             if(_Users.ContainsKey(userName))
@@ -111,6 +70,7 @@ namespace FHTW.Swen1.Swamp
                 UserName = userName,
                 PasswordHash = HashPassword(password),
                 Coins = 20,
+                ELO = 100,
                 Stack = new List<ICard>(),
                 Deck = new List<ICard>()
             };
@@ -119,13 +79,6 @@ namespace FHTW.Swen1.Swamp
             return true;
         }
 
-
-        /// <summary>Performs a user logon.</summary>
-        /// <param name="userName">User name.</param>
-        /// <param name="password">Password.</param>
-        /// <returns>Returns a tuple of success flag and token.
-        ///          If successful, the success flag is TRUE and the token contains a token string,
-        ///          otherwise success flag is FALSE and token is empty.</returns>
         public static (bool Success, string Token) Logon(string userName, string password)
         {
             if(_Users.ContainsKey(userName))
@@ -138,7 +91,7 @@ namespace FHTW.Swen1.Swamp
             return (false, string.Empty);
         }
         
-        bool AddToStack(ICard card)
+        public bool AddToStack(ICard card)
         {
             if (card != null)
             {
@@ -149,7 +102,7 @@ namespace FHTW.Swen1.Swamp
             return false;
         }
 
-        bool AddToDeck(ICard card)
+        public bool AddToDeck(ICard card)
         {
             if (card != null && Stack.Count > 0 && Deck.Count < 4)
             {
@@ -160,7 +113,7 @@ namespace FHTW.Swen1.Swamp
             return false;
         }
 
-        bool RemoveFromStack(ICard card)
+        public bool RemoveFromStack(ICard card)
         {
             if (Stack.Contains(card))
             {
@@ -171,7 +124,7 @@ namespace FHTW.Swen1.Swamp
             return false;
         }
 
-        bool RemoveFromDeck(ICard card)
+        public bool RemoveFromDeck(ICard card)
         {
             if (Deck.Contains(card))
             {
@@ -182,7 +135,7 @@ namespace FHTW.Swen1.Swamp
             return false;
         }
 
-        bool BuyPackage()
+        public bool BuyPackage()
         {
             if (Coins >= 5)
             {
@@ -199,7 +152,7 @@ namespace FHTW.Swen1.Swamp
             return false;
         }
 
-        void SelectCardsForDeck()
+        public void SelectCardsForDeck()
         {
             var cards = Stack
                 .OrderByDescending(card => card.Damage)

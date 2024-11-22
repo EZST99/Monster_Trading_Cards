@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FHTW.Swen1.Swamp.Exceptions;
 using SwenProject_Arslan.Models;
@@ -20,14 +21,19 @@ namespace FHTW.Swen1.Swamp
                     {
                         Console.WriteLine($"Received Payload: {e.Payload}");
 
-                        var userData = e.Payload.Split('&');
-                        if (userData.Length < 2 || !userData[0].StartsWith("username=") || !userData[1].StartsWith("password="))
+                        // JSON-Daten deserialisieren
+                        var requestData = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Payload);
+
+                        if (requestData == null || 
+                            !requestData.ContainsKey("Username") || 
+                            !requestData.ContainsKey("Password"))
                         {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected 'username=...&password=...'.");
+                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected JSON with 'Username' and 'Password'.");
                             return true;
                         }
-                        var username = userData[0].Replace("username=", "").Trim();
-                        var password = userData[1].Replace("password=", "").Trim();
+
+                        var username = requestData["Username"].Trim();
+                        var password = requestData["Password"].Trim();
 
                         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                         {
@@ -68,14 +74,19 @@ namespace FHTW.Swen1.Swamp
                     {
                         Console.WriteLine($"Received Payload: {e.Payload}");
 
-                        var userData = e.Payload.Split('&');
-                        if (userData.Length < 2 || !userData[0].StartsWith("username=") || !userData[1].StartsWith("password="))
+                        // JSON-Daten deserialisieren
+                        var requestData = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Payload);
+
+                        if (requestData == null || 
+                            !requestData.ContainsKey("Username") || 
+                            !requestData.ContainsKey("Password"))
                         {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected 'username=...&password=...'.");
+                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected JSON with 'Username' and 'Password'.");
                             return true;
                         }
-                        var username = userData[0].Replace("username=", "").Trim();
-                        var password = userData[1].Replace("password=", "").Trim();
+
+                        var username = requestData["Username"].Trim();
+                        var password = requestData["Password"].Trim();
 
                         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                         {
@@ -86,7 +97,7 @@ namespace FHTW.Swen1.Swamp
                         var isLoggedIn = User.Logon(username, password); // Benutzer einloggen
                         if (isLoggedIn != (false, ""))
                         {
-                            e.Reply(HttpStatusCode.OK, $"User {username} loged in successfully.");
+                            e.Reply(HttpStatusCode.OK, $"User {username} loged in successfully. Token: {isLoggedIn}");
                             return true;
                         }
                         else

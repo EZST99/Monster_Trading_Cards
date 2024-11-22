@@ -12,3 +12,4 @@ C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arsl
 C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.pdb
 C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.genruntimeconfig.cache
 C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\ref\SwenProject_Arslan.dll
+C:\Users\irema\OneDrive\Desktop\Dokumente\FHTW\3.Semester\SWEN1\SwenProject_Arslan\SwenProject_Arslan\obj\Debug\net8.0\SwenProject_Arslan.sourcelink.json
