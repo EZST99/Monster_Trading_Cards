@@ -1,5 +1,5 @@
 // Register User
-curl -X POST http://localhost:12000/register --header "Content-Type: application/json" -d "{\"Username\":\"kienboec\", \"Password\":\"daniel\"}"
+curl -X POST http://localhost:12000/users --header "Content-Type: application/json" -d "{\"Username\":\"kienboec\", \"Password\":\"daniel\"}"
 
 // Login User
 curl -X GET http://localhost:12000/login --header "Content-Type: application/json" -d "{\"Username\":\"kienboec\", \"Password\":\"daniel\"}"
