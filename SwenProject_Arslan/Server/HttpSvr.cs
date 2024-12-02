@@ -51,7 +51,7 @@ namespace FHTW.Swen1.Swamp
             if(Active) return; // damit nicht mehrmals gestartet werden kann, man könnte exception werfen
 
             Active = true; // jetzt active
-            _Listener = new(IPAddress.Parse("127.0.0.1"), 10001); // auf welche ip adresse soll gehört werden und bei welchem host(localhost)
+            _Listener = new(IPAddress.Parse("127.0.0.1"), 12000); // auf welche ip adresse soll gehört werden und bei welchem host(localhost)
             _Listener.Start(); 
 
             byte[] buf = new byte[256]; // buffer damit im buffer der Stream verarbeitet werden kann den der listener zurückgibt
