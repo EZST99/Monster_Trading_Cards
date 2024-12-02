@@ -1,125 +1,116 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.Json.Nodes;
+
 using FHTW.Swen1.Swamp.Exceptions;
-using SwenProject_Arslan.Models;
+
+
 
 namespace FHTW.Swen1.Swamp
 {
+    /// <summary>This class implements a handler for user-specific requests.</summary>
     public class UserHandler: Handler, IHandler
-    { 
+    {
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // [override] Handler                                                                                               //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>Handles an incoming HTTP request.</summary>
+        /// <param name="e">Event arguments.</param>
         public override bool Handle(HttpSvrEventArgs e)
         {
-            if (e.Path.StartsWith("/users", StringComparison.OrdinalIgnoreCase))
-            {
-                if (e.Method == "POST")
-                {
-                    try
-                    {
-                        Console.WriteLine($"Received Payload: {e.Payload}");
-
-                        // JSON-Daten deserialisieren
-                        var requestData = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Payload);
-
-                        if (requestData == null || 
-                            !requestData.ContainsKey("Username") || 
-                            !requestData.ContainsKey("Password"))
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected JSON with 'Username' and 'Password'.");
-                            return true;
-                        }
-
-                        var username = requestData["Username"].Trim();
-                        var password = requestData["Password"].Trim();
-
-                        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Username and password cannot be empty.");
-                            return true;
-                        }
-
-                        var isRegistered = User.Create(username, password); // Benutzer erstellen
-
-                        if (isRegistered)
-                        {
-                            e.Reply(HttpStatusCode.OK, $"User {username} registered successfully.");
-                            return true;
-                        }
-                        else
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "User already exists");
-                            return true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        e.Reply(HttpStatusCode.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-                        Console.WriteLine($"Unhandled exception: {ex}"); // Fehler für Debugging loggen
-                        return true;
-                    }
-                }
-
-                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
-                return true;
+            if((e.Path.TrimEnd('/', ' ', '\t') == "/users") && (e.Method == "POST"))
+            {                                                                   // POST /users will create a user object
+                return _CreateUser(e);
             }
-            
-            if (e.Path.StartsWith("/sessions", StringComparison.OrdinalIgnoreCase))
+            else if(e.Path.StartsWith("/users/") && (e.Method == "GET"))        // GET /users/UserName will query a user
             {
-                if (e.Method == "POST")
-                {
-                    try
-                    {
-                        Console.WriteLine($"Received Payload: {e.Payload}");
-
-                        // JSON-Daten deserialisieren
-                        var requestData = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Payload);
-
-                        if (requestData == null || 
-                            !requestData.ContainsKey("Username") || 
-                            !requestData.ContainsKey("Password"))
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected JSON with 'Username' and 'Password'.");
-                            return true;
-                        }
-
-                        var username = requestData["Username"].Trim();
-                        var password = requestData["Password"].Trim();
-
-                        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Username and password cannot be empty.");
-                            return true;
-                        }
-
-                        var isLoggedIn = User.Logon(username, password); // Benutzer einloggen
-                        if (isLoggedIn != (false, ""))
-                        {
-                            e.Reply(HttpStatusCode.OK, $"User {username} loged in successfully. Token: {isLoggedIn}");
-                            return true;
-                        }
-                        else
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Username or password is incorrect.");
-                            return true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        e.Reply(HttpStatusCode.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-                        Console.WriteLine($"Unhandled exception: {ex}"); // Fehler für Debugging loggen
-                        return true;
-                    }
-                }
-
-                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use GET.");
-                return true;
+                return _QueryUser(e);
             }
 
             return false;
         }
 
+
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // private static methods                                                                                           //
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>Creates a user.</summary>
+        /// <param name="e">Event arguments.</param>
+        /// <returns>Returns TRUE.</returns>
+        private static bool _CreateUser(HttpSvrEventArgs e)
+        {
+            JsonObject? reply = new JsonObject() { ["success"] = false, ["message"] = "Invalid request." };
+            int status = HttpStatusCode.BAD_REQUEST;                            // initialize response
+
+            try
+            {
+                JsonNode? json = JsonNode.Parse(e.Payload);                     // parse payload
+                if(json != null)
+                {                                                               // submit payload to User.Create()
+                    User.Create((string) json["username"]!,                     // will throw exception if failed.
+                                (string) json["password"]!);
+                    status = HttpStatusCode.OK;
+                    reply = new JsonObject() { ["success"] = true,
+                                                ["message"] = "User created."};
+                }
+            }
+            catch(UserException ex)
+            {                                                                   // handle UserException
+                reply = new JsonObject() { ["success"] = false, ["message"] = ex.Message };
+            }
+            catch(Exception) 
+            {                                                                   // handle unexpected exception
+                reply = new JsonObject() { ["success"] = false, ["message"] = "Unexpected error." };
+            }
+
+            e.Reply(status, reply?.ToJsonString());                             // send response
+            return true;
+        }
+
+
+        /// <summary>Handles a user query request.</summary>
+        /// <param name="e">Event arguments.</param>
+        /// <returns>Returns TRUE.</returns>
+        private static bool _QueryUser(HttpSvrEventArgs e)
+        {
+            JsonObject? reply = new JsonObject() { ["success"] = false, ["message"] = "Invalid request." };
+            int status = HttpStatusCode.BAD_REQUEST;                            // initialize response
+
+            try
+            {
+                (bool Success, User? User) ses = Token.Authenticate(e);         // querying user information requires authentication
+
+                if(ses.Success)
+                {                                                               // authentication successful
+                    User? user = User.Get(e.Path[7..]);                         // get requested user name
+
+                    if(user == null)
+                    {                                                           // user not found
+                        status = HttpStatusCode.NOT_FOUND;
+                        reply = new JsonObject() { ["success"] = false, ["message"] = "User not found." };
+                    }
+                    else
+                    {
+                        status = HttpStatusCode.OK;
+                        reply = new JsonObject() { ["success"] = true,          // prepare response
+                            ["username"] = user!.UserName };
+                    }
+                }
+                else
+                {
+                    status = HttpStatusCode.UNAUTHORIZED;
+                    reply = new JsonObject() { ["success"] = false, ["message"] = "Unauthorized." };
+                }
+            }
+            catch(Exception)
+            {                                                                   // hanlde unexpected exception
+                reply = new JsonObject() { ["success"] = false, ["message"] = "Unexpected error." };
+            }
+
+            e.Reply(status, reply?.ToJsonString());
+            return true;
+        }
     }
 }
