@@ -159,6 +159,11 @@ namespace FHTW.Swen1.Swamp
                 .Take(4)
                 .ToList();
         }
+        
+        public ICard PlayCard()
+        {
+            return Deck[RandomNumberGenerator.GetInt32(0, Deck.Count - 1)];
+        }
     }
     
     

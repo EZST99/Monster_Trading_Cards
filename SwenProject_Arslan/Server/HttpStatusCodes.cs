@@ -13,5 +13,7 @@ namespace FHTW.Swen1.Swamp
         public const int NOT_FOUND = 404;
         
         public const int INTERNAL_SERVER_ERROR = 500;
+        
+        public const int UNAUTHORIZED = 401;
     }
 }

@@ -35,5 +35,23 @@ namespace FHTW.Swen1.Swamp
 
             return (false, null);
         }
+
+        public static (bool Success, User? User) Authenticate(HttpSvrEventArgs e)
+        {
+            foreach (HttpHeader i in e.Headers)
+            {
+                if (i.Name == "Authorization")
+                {
+                    if (i.Value[..7] == "Bearer")
+                    {
+                        return Authenticate(i.Value[7..].Trim());
+                    }
+
+                    break;
+                }
+            }
+            
+            return (false, null);
+        }
     }
 }

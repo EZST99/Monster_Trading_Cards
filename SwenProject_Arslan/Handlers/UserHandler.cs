@@ -13,7 +13,7 @@ namespace FHTW.Swen1.Swamp
     { 
         public override bool Handle(HttpSvrEventArgs e)
         {
-            if (e.Path.StartsWith("/register", StringComparison.OrdinalIgnoreCase))
+            if (e.Path.StartsWith("/users", StringComparison.OrdinalIgnoreCase))
             {
                 if (e.Method == "POST")
                 {
@@ -66,9 +66,9 @@ namespace FHTW.Swen1.Swamp
                 return true;
             }
             
-            if (e.Path.StartsWith("/login", StringComparison.OrdinalIgnoreCase))
+            if (e.Path.StartsWith("/sessions", StringComparison.OrdinalIgnoreCase))
             {
-                if (e.Method == "GET")
+                if (e.Method == "POST")
                 {
                     try
                     {
