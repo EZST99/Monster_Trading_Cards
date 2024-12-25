@@ -1,10 +1,7 @@
-﻿using System;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 
-
-
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan.Server
 {
     /// <summary>This class defines event arguments for the <see cref="HttpSvrEventHandler"/> event handler.</summary>
     public class HttpSvrEventArgs: EventArgs

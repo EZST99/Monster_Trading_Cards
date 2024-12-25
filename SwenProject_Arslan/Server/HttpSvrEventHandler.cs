@@ -1,8 +1,4 @@
-﻿using System;
-
-
-
-namespace FHTW.Swen1.Swamp
+﻿namespace SwenProject_Arslan.Server
 {
     /// <summary>This delegate is used for <see cref="HttpSvr"/> events.</summary>
     /// <param name="sender">Sending object.</param>

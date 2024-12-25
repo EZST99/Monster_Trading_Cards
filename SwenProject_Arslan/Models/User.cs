@@ -1,20 +1,16 @@
-﻿using System;
-using System.Security;
+﻿using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
-using FHTW.Swen1.Swamp.Exceptions;
-using MyApp.Models;
-using SwenProject_Arslan.Models;
+using SwenProject_Arslan.Interfaces;
 
-
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan.Models
 {
     /// <summary>This class represents a user.</summary>
     public sealed class User
     {
         private static Dictionary<string, User> _Users = new();
-        public string UserName { get; private set; }
-        public string PasswordHash { get;  private set; }
+        public string UserName { get; set; }
+        public string PasswordHash { get; set; }
         public int Coins { get; set; }
         public int ELO { get; set; }
         public List<ICard> Stack { get; private set; }

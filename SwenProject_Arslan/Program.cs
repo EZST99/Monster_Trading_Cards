@@ -1,8 +1,6 @@
-﻿using System;
+﻿using SwenProject_Arslan.Server;
 
-
-
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan
 {
     /// <summary>This class contains the main entry point of the application.</summary>
     internal class Program

@@ -1,8 +1,6 @@
-﻿using System;
+﻿using SwenProject_Arslan.Server;
 
-
-
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan.Interfaces
 {
     public interface IHandler
     {

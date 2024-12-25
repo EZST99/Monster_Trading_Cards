@@ -1,8 +1,6 @@
-﻿using System;
+﻿using SwenProject_Arslan.Server;
 
-
-
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan.Models
 {
     /// <summary>This class provides methods for the token-based security.</summary>
     public static class Token

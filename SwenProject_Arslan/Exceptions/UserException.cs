@@ -1,8 +1,4 @@
-﻿using System;
-
-
-
-namespace FHTW.Swen1.Swamp.Exceptions
+﻿namespace SwenProject_Arslan.Exceptions
 {
     /// <summary>This class represents a user-specific exception.</summary>
     public class UserException : Exception

@@ -1,8 +1,4 @@
-﻿using System;
-
-
-
-namespace FHTW.Swen1.Swamp
+﻿namespace SwenProject_Arslan.Server
 {
     /// <summary>This class represents a HTTP header.</summary>
     public class HttpHeader

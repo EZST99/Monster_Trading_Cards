@@ -1,4 +1,4 @@
-using MyApp.Models;
+using SwenProject_Arslan.Interfaces;
 
 namespace SwenProject_Arslan.Models;
 

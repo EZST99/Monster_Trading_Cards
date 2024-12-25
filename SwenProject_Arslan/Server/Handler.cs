@@ -1,8 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using System.Reflection;
+﻿using System.Reflection;
+using SwenProject_Arslan.Interfaces;
 
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan.Server
 {
     public abstract class Handler: IHandler
     {

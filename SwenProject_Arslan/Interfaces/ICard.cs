@@ -1,6 +1,6 @@
 using SwenProject_Arslan.Models;
 
-namespace MyApp.Models;
+namespace SwenProject_Arslan.Interfaces;
 
 public interface ICard
 {

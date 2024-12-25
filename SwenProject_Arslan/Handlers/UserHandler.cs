@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using FHTW.Swen1.Swamp.Exceptions;
+﻿using System.Text.Json;
+using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
+using SwenProject_Arslan.Server;
 
-namespace FHTW.Swen1.Swamp
+namespace SwenProject_Arslan.Handlers
 {
     public class UserHandler: Handler, IHandler
     { 
