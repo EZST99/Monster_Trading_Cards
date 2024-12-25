@@ -44,11 +44,11 @@ public class PackageHandler : Handler, IHandler
                     }
 
                     // Paket kaufen
-                    if (!user.BuyPackage())
+                   /* if (!user.BuyPackage())
                     {
                         e.Reply(HttpStatusCode.BAD_REQUEST, "Not enough coins to buy a package.");
                         return true;
-                    }
+                    }*/
 
                     e.Reply(HttpStatusCode.OK, $"User {user.UserName} purchased package successfully.");
                     return true;

@@ -1,32 +1,38 @@
-using SwenProject_Arslan.Interfaces;
-using SwenProject_Arslan.Server;
+namespace SwenProject_Arslan.Handlers;
+using Npgsql;
+using System;
 
-namespace SwenProject_Arslan.Handlers
+public class TestHandler
 {
-    public class TestHandler : Handler, IHandler
+    public static async void connectDb()
     {
-        public override bool Handle(HttpSvrEventArgs e)
+        var connString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
+        await using var conn = new NpgsqlConnection(connString);
+        await conn.OpenAsync();
+        // Insert some data
+        //await using (var cmd = new NpgsqlCommand("INSERT INTO \"user\" (id, username, password, fullname, email) VALUES (@id, @u, @pw, @f, @em)", conn))
+        //{
+        //    cmd.Parameters.AddWithValue("id", 3);
+        //    cmd.Parameters.AddWithValue("u", "test");
+        //    cmd.Parameters.AddWithValue("pw", "11111111");
+        //    cmd.Parameters.AddWithValue("f", "test test");
+        //    cmd.Parameters.AddWithValue("em", "test@test.at");
+        //    await cmd.ExecuteNonQueryAsync();
+        //}
+        // Retrieve all rows
+        await using (var cmd = new NpgsqlCommand("SELECT * FROM \"users\"", conn))
+        await using (var reader = await cmd.ExecuteReaderAsync())
         {
-            if (e.Path.StartsWith("/test", StringComparison.OrdinalIgnoreCase))
+            while (await reader.ReadAsync())
             {
-
-                if (e.Method == "GET")
-                {
-                    e.Reply(HttpStatusCode.OK, "TestHandler: GET request received for /test");
-                }
-                else if (e.Method == "POST")
-                {
-                    e.Reply(HttpStatusCode.OK, "TestHandler: POST request received for /test");
-                }
-                else
-                {
-                    e.Reply(HttpStatusCode.NOT_FOUND, "TestHandler: Unsupported HTTP method");
-                }
-
-                return true; // Anfrage wurde verarbeitet
+                int id = reader.GetInt32(0);
+                string username = reader.GetString(1);
+                string password= reader.GetString(2);
+                int coins = reader.GetInt32(3);
+                int elo = reader.GetInt32(4);
+                Console.WriteLine($"ID: {id}, Username: {username}, Password: {password}, Coins: {coins}, ELO: {elo}");
             }
-
-            return false; // Anfrage an den nächsten Handler weitergeben
+                
         }
     }
 }

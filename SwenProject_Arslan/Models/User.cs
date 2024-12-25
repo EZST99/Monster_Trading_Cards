@@ -13,11 +13,19 @@ namespace SwenProject_Arslan.Models
         public string PasswordHash { get; set; }
         public int Coins { get; set; }
         public int ELO { get; set; }
-        public List<ICard> Stack { get; private set; }
-        public List<ICard> Deck { get; private set; }
+        //public List<ICard> Stack { get; private set; }
+        //public List<ICard> Deck { get; private set; }
 
         public User()
         {}
+
+        public User(string userName, string password)
+        {
+            UserName = userName;
+            PasswordHash = HashPassword(password);
+            Coins = 20;
+            ELO = 100;
+        }
         
         public static string HashPassword(string password)
         {
@@ -67,8 +75,8 @@ namespace SwenProject_Arslan.Models
                 PasswordHash = HashPassword(password),
                 Coins = 20,
                 ELO = 100,
-                Stack = new List<ICard>(),
-                Deck = new List<ICard>()
+                //Stack = new List<ICard>(),
+                //Deck = new List<ICard>()
             };
 
             _Users.Add(user.UserName, user);
@@ -87,7 +95,7 @@ namespace SwenProject_Arslan.Models
             return (false, string.Empty);
         }
         
-        public bool AddToStack(ICard card)
+      /*  public bool AddToStack(ICard card)
         {
             if (card != null)
             {
@@ -159,7 +167,7 @@ namespace SwenProject_Arslan.Models
         public ICard PlayCard()
         {
             return Deck[RandomNumberGenerator.GetInt32(0, Deck.Count - 1)];
-        }
+        }*/
     }
     
     
