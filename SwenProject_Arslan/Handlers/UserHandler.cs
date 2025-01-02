@@ -49,9 +49,7 @@ namespace SwenProject_Arslan.Handlers
                             e.Reply(HttpStatusCode.BAD_REQUEST, "Username and password cannot be empty.");
                             return true;
                         }
-
-                        var newUser = new User(username, password);
-                        _userService.CreateUserAsync(newUser).Wait();
+                        User.Create(username, password);
 
                         e.Reply(HttpStatusCode.OK, "User created successfully.");
                         return true; // Erfolgreiche Verarbeitung

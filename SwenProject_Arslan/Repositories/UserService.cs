@@ -13,7 +13,7 @@ public class UserService
 
     public async Task CreateUserAsync(User user)
     {
-        await _dbHandler.InsertAsync(user);
+        await DbHandler.InsertAsync(user);
     }
 
     public async Task<List<User>> GetAllUsersAsync()

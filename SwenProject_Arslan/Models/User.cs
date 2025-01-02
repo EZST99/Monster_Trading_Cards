@@ -62,13 +62,8 @@ namespace SwenProject_Arslan.Models
             else { new AuthenticationException("Not authenticated."); }
         }
         
-        public static bool Create(string userName, string password)
+        public static async Task Create(string userName, string password)
         {
-            if(_Users.ContainsKey(userName))
-            {
-                return false;
-            }
-
             User user = new()
             {
                 UserName = userName,
@@ -79,8 +74,7 @@ namespace SwenProject_Arslan.Models
                 //Deck = new List<ICard>()
             };
 
-            _Users.Add(user.UserName, user);
-            return true;
+            await DbHandler.InsertAsync(user);
         }
 
         public static (bool Success, string Token) Logon(string userName, string password)

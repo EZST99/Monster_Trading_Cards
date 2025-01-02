@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public class DbHandler
 {
-    private readonly string _connectionString;
+    private static string _connectionString;
 
     public DbHandler(string connectionString)
     {
@@ -15,7 +15,7 @@ public class DbHandler
     }
 
     // Hilfsmethode für das Setzen von doppelten Anführungszeichen
-    private string QuoteTableName(string tableName)
+    private static string QuoteTableName(string tableName)
     {
         var reservedKeywords = new HashSet<string>
         {
@@ -31,7 +31,7 @@ public class DbHandler
     }
 
     // Create - Einfügen eines neuen Datensatzes
-    public async Task InsertAsync<T>(T entity)
+    public static async Task InsertAsync<T>(T entity)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
