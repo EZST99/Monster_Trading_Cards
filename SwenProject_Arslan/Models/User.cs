@@ -1,6 +1,7 @@
 ﻿using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
+using System.Text.Json;
 using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
 
@@ -49,19 +50,41 @@ namespace SwenProject_Arslan.Models
             return computedHash.SequenceEqual(hash);
         }
         
-        public void Save(string token)
+        public void Save(string token, Dictionary<string, object> updates)
         {
+            // Authentifizieren und Autorisieren
             (bool Success, User? User) auth = Token.Authenticate(token);
-            if(auth.Success)
+            if (!auth.Success)
             {
-                if(auth.User!.UserName != UserName)
-                {
-                    throw new SecurityException("Trying to change other user's data.");
-                }
-                // Save data.
+                throw new AuthenticationException("Not authenticated.");
             }
-            else { new AuthenticationException("Not authenticated."); }
+            if (auth.User!.UserName != UserName)
+            {
+                throw new SecurityException("Trying to change other user's data.");
+            }
+
+            // Dynamisches Update der Eigenschaften
+            foreach (var update in updates)
+            {
+                var propertyInfo = typeof(User).GetProperty(update.Key);
+                if (propertyInfo == null || !propertyInfo.CanWrite)
+                {
+                    throw new ArgumentException($"Property '{update.Key}' does not exist or is read-only.");
+                }
+
+                // Konvertiere den Wert basierend auf dem Zieltyp
+                var targetType = propertyInfo.PropertyType;
+                var value = update.Value is JsonElement jsonElement
+                    ? jsonElement.Deserialize(targetType)
+                    : Convert.ChangeType(update.Value, targetType);
+
+                propertyInfo.SetValue(this, value);
+            }
+
+            // Änderungen in der Datenbank speichern
+            DbHandler.UpdateAsync(this, "username", UserName).GetAwaiter().GetResult();
         }
+
         
         public static async Task Create(string userName, string password)
         {

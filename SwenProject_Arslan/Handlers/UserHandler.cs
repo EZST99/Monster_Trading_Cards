@@ -105,9 +105,56 @@ namespace SwenProject_Arslan.Handlers
                     e.Reply(HttpStatusCode.OK, userJson);
                     return true;
                 }
+                if (e.Method == "PUT")
+                {
+                    var username = e.Path.Split('/').LastOrDefault();
+                    var authorizationHeader = e.Headers.FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
 
+                    if (string.IsNullOrEmpty(authorizationHeader))
+                    {
+                        e.Reply(HttpStatusCode.UNAUTHORIZED, "Authorization header is missing.");
+                        return true;
+                    }
 
-                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST or GET.");
+                    var tokenParts = authorizationHeader.Split(' ');
+                    if (tokenParts.Length != 2 || !tokenParts[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid authorization format.");
+                        return true;
+                    }
+
+                    var token = tokenParts[1];
+
+                    // Parse JSON payload
+                    var updates = JsonSerializer.Deserialize<Dictionary<string, object>>(e.Payload);
+                    if (updates == null || updates.Count == 0)
+                    {
+                        e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format.");
+                        return true;
+                    }
+
+                    // Benutzer abrufen und aktualisieren
+                    var user = await User.GetUserByUserName(username);
+                    if (user == null)
+                    {
+                        e.Reply(HttpStatusCode.NOT_FOUND, "User not found.");
+                        return true;
+                    }
+
+                    try
+                    {
+                        user.Save(token, updates);
+                        e.Reply(HttpStatusCode.OK, "User updated successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        e.Reply(HttpStatusCode.BAD_REQUEST, ex.Message);
+                    }
+
+                    return true;
+                }
+
+                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST, GET or PUT.");
                 return true;
             }
             catch (UserException ex)
@@ -173,8 +220,7 @@ namespace SwenProject_Arslan.Handlers
                         return true;
                     }
                 }
-
-
+                
                 e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
                 return true;
             }

@@ -14,3 +14,10 @@ curl -i -X POST http://localhost:10001/sessions --header "Content-Type: applicat
 
 # Should fail:
 curl -i -X POST http://localhost:10001/sessions --header "Content-Type: application/json" -d "{\"Username\":\"kienboec\", \"Password\":\"different\"}"
+
+# Get User Details
+curl -i -X GET http://localhost:10001/users/kienboec -H "Authorization: Bearer <Token>"
+
+# Update User Details
+curl -i -X PUT http://localhost:10001/users/kienboec -H "Content-Type: application/json" -H "Authorization: Bearer <Token>" -d "{\"Coins\":150,\"ELO\":2
+500}"

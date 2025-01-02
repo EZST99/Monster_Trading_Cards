@@ -169,7 +169,7 @@ public class DbHandler
     }
 
     // Update - Datensatz aktualisieren
-    public async Task UpdateAsync<T>(T entity, int id)
+    public static async Task UpdateAsync<T>(T entity, string keyColumn, object keyValue)
     {
         using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -181,14 +181,14 @@ public class DbHandler
 
         var setClause = string.Join(", ", properties.Select(p => $"{p.Name} = @{p.Name}"));
 
-        var query = $"UPDATE {tableName} SET {setClause} WHERE id = @id";
+        var query = $"UPDATE {tableName} SET {setClause} WHERE {keyColumn} = @keyValue";
 
         await using var cmd = new NpgsqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("id", id);
+        cmd.Parameters.AddWithValue("keyValue", keyValue);
 
         foreach (var property in properties)
         {
-            cmd.Parameters.AddWithValue($"@{property.Name}", property.GetValue(entity));
+            cmd.Parameters.AddWithValue($"@{property.Name}", property.GetValue(entity) ?? DBNull.Value);
         }
 
         await cmd.ExecuteNonQueryAsync();

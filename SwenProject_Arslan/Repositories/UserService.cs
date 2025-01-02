@@ -28,7 +28,7 @@ public class UserService
 
     public async Task UpdateUserAsync(User user, int id)
     {
-        await _dbHandler.UpdateAsync(user, id);
+        //await _dbHandler.UpdateAsync(user, id);
     }
 
     public async Task DeleteUserAsync(int id)
