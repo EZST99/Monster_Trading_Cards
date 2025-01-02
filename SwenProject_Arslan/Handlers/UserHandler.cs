@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading.Tasks;
 using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
@@ -18,7 +21,6 @@ namespace SwenProject_Arslan.Handlers
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
-        
         public override bool Handle(HttpSvrEventArgs e)
         {
             if (e.Path.StartsWith("/users", StringComparison.OrdinalIgnoreCase))
@@ -34,7 +36,7 @@ namespace SwenProject_Arslan.Handlers
             return false;
         }
 
-        private static async Task<bool> HandleUserRequest(HttpSvrEventArgs e)
+        private async Task<bool> HandleUserRequest(HttpSvrEventArgs e)
         {
             try
             {
@@ -63,7 +65,49 @@ namespace SwenProject_Arslan.Handlers
                     return true;
                 }
 
-                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
+                if (e.Method == "GET")
+                {
+                    var username = e.Path.Split('/').LastOrDefault();
+                    var authorizationHeader = e.Headers.FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                    if (string.IsNullOrEmpty(authorizationHeader))
+                    {
+                        e.Reply(HttpStatusCode.UNAUTHORIZED, "Authorization header is missing.");
+                        return true;
+                    }
+
+                    var tokenParts = authorizationHeader.Split(' ');
+                    if (tokenParts.Length != 2 || !tokenParts[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+                    {
+                        e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid authorization format.");
+                        return true;
+                    }
+
+                    var token = tokenParts[1];
+
+                    // Token validation
+                    var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
+                    if (!isAuthenticated || authenticatedUser == null)
+                    {
+                        e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
+                        return true;
+                    }
+
+                    // Fetch user data
+                    var user = await User.GetUserByUserName(username);
+                    if (user == null)
+                    {
+                        e.Reply(HttpStatusCode.NOT_FOUND, "User not found.");
+                        return true;
+                    }
+
+                    var userJson = JsonSerializer.Serialize(user);
+                    e.Reply(HttpStatusCode.OK, userJson);
+                    return true;
+                }
+
+
+                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST or GET.");
                 return true;
             }
             catch (UserException ex)

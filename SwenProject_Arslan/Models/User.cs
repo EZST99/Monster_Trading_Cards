@@ -85,17 +85,23 @@ namespace SwenProject_Arslan.Models
             }
         }
 
+        public static async Task<User> GetUserByUserName(string userName)
+        {
+            return await DbHandler.GetByColumnAsync<User>("Username", userName);
+        }
+
         public static async Task<(bool Success, string Token)> Logon(string userName, string password)
         {
-            var userByUsername = await DbHandler.GetByColumnAsync<User>("Username", userName);
+            var userByUsername = await GetUserByUserName(userName);
             if (userByUsername != null)
             {
-                if (VerifyPassword((password), userByUsername.PasswordHash))
+                if (VerifyPassword(password, userByUsername.PasswordHash))
                     return (true, Token._CreateTokenFor(userByUsername));
             }
 
             return (false, string.Empty);
         }
+
         
       /*  public bool AddToStack(ICard card)
         {
