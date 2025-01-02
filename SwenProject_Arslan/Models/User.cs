@@ -1,6 +1,7 @@
 ﻿using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
+using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
 
 namespace SwenProject_Arslan.Models
@@ -73,17 +74,24 @@ namespace SwenProject_Arslan.Models
                 //Stack = new List<ICard>(),
                 //Deck = new List<ICard>()
             };
-
-            await DbHandler.InsertAsync(user);
+            try
+            {
+                await DbHandler.InsertAsync(user, "UserName");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                throw new UserException($"Error: {ex.Message}");
+            }
         }
 
-        public static (bool Success, string Token) Logon(string userName, string password)
+        public static async Task<(bool Success, string Token)> Logon(string userName, string password)
         {
-            if(_Users.ContainsKey(userName))
+            var userByUsername = await DbHandler.GetByColumnAsync<User>("Username", userName);
+            if (userByUsername != null)
             {
-                if(VerifyPassword((password), _Users[userName].PasswordHash))
-                    return (true, Token._CreateTokenFor(_Users[userName]));
-                return (false, string.Empty);
+                if (VerifyPassword((password), userByUsername.PasswordHash))
+                    return (true, Token._CreateTokenFor(userByUsername));
             }
 
             return (false, string.Empty);
