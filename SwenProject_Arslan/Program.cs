@@ -16,18 +16,6 @@ namespace SwenProject_Arslan
         /// <param name="args">Command line arguments.</param>
         static async Task Main(string[] args)
         {
-            var dbHandler = new DbHandler("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg");
-            var userService = new UserService(dbHandler);
-            // Beispiel: Benutzer erstellen
-            var newUser = new User ("mtcg_user", "mtcg-password");
-            await userService.CreateUserAsync(newUser);
-
-            // Alle Benutzer abfragen
-            var users = await userService.GetAllUsersAsync();
-            foreach (var user in users)
-            {
-                Console.WriteLine($"Username: {user.UserName}, Coins: {user.Coins}");
-            }
             HttpSvr svr = new();
             svr.Incoming += Svr_Incoming;
             //svr.Incoming *= (sender, e) => { Handler.HandleEvent(e); };

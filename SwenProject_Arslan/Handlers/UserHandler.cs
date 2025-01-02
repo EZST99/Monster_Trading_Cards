@@ -1,14 +1,26 @@
 ﻿using System.Text.Json;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
+using SwenProject_Arslan.Repositories;
 using SwenProject_Arslan.Server;
 
 namespace SwenProject_Arslan.Handlers
 {
     public class UserHandler: Handler, IHandler
     { 
-        public override bool Handle(HttpSvrEventArgs e)
+        private readonly UserService _userService;
+
+        public UserHandler() : this(new UserService(new DbHandler("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg")))
         {
+        }
+        public UserHandler(UserService userService)
+        {
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        }
+
+
+        public override bool Handle(HttpSvrEventArgs e)
+        { 
             if (e.Path.StartsWith("/users", StringComparison.OrdinalIgnoreCase))
             {
                 if (e.Method == "POST")
@@ -20,11 +32,12 @@ namespace SwenProject_Arslan.Handlers
                         // JSON-Daten deserialisieren
                         var requestData = JsonSerializer.Deserialize<Dictionary<string, string>>(e.Payload);
 
-                        if (requestData == null || 
-                            !requestData.ContainsKey("Username") || 
+                        if (requestData == null ||
+                            !requestData.ContainsKey("Username") ||
                             !requestData.ContainsKey("Password"))
                         {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. Expected JSON with 'Username' and 'Password'.");
+                            e.Reply(HttpStatusCode.BAD_REQUEST,
+                                "Invalid payload format. Expected JSON with 'Username' and 'Password'.");
                             return true;
                         }
 
@@ -37,29 +50,25 @@ namespace SwenProject_Arslan.Handlers
                             return true;
                         }
 
-                        var isRegistered = User.Create(username, password); // Benutzer erstellen
+                        var newUser = new User(username, password);
+                        _userService.CreateUserAsync(newUser).Wait();
 
-                        if (isRegistered)
-                        {
-                            e.Reply(HttpStatusCode.OK, $"User {username} registered successfully.");
-                            return true;
-                        }
-                        else
-                        {
-                            e.Reply(HttpStatusCode.BAD_REQUEST, "User already exists");
-                            return true;
-                        }
+                        e.Reply(HttpStatusCode.OK, "User created successfully.");
+                        return true; // Erfolgreiche Verarbeitung
                     }
                     catch (Exception ex)
                     {
                         e.Reply(HttpStatusCode.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
-                        Console.WriteLine($"Unhandled exception: {ex}"); // Fehler für Debugging loggen
+                        Console.WriteLine($"Unhandled exception: {ex}");
                         return true;
                     }
                 }
-
-                e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
-                return true;
+                else
+                {
+                    // Wenn die Methode NICHT POST ist
+                    e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
+                    return true;
+                }
             }
             
             if (e.Path.StartsWith("/sessions", StringComparison.OrdinalIgnoreCase))
