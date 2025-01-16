@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SwenProject_Arslan.Exceptions;
+using SwenProject_Arslan.Handlers.DbHandlers;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
 using SwenProject_Arslan.Repositories;
@@ -12,15 +13,19 @@ namespace SwenProject_Arslan.Handlers
 {
     public class UserHandler: Handler, IHandler
     { 
-        private readonly UserService _userService;
+        private readonly DbHandler _dbHandler;
 
-        public UserHandler() : this(new UserService(new DbHandler("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg")))
+        private readonly UserDbHandler _userDbHandler;
+
+        public UserHandler() : this(new UserDbHandler("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg"))
         {
         }
-        public UserHandler(UserService userService)
+
+        public UserHandler(UserDbHandler userDbHandler)
         {
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _userDbHandler = userDbHandler ?? throw new ArgumentNullException(nameof(userDbHandler));
         }
+
         public override bool Handle(HttpSvrEventArgs e)
         {
             if (e.Path.StartsWith("/users", StringComparison.OrdinalIgnoreCase))
@@ -143,7 +148,7 @@ namespace SwenProject_Arslan.Handlers
 
                     try
                     {
-                        user.Save(token, updates);
+                        await user.SaveAsync(token, updates);
                         e.Reply(HttpStatusCode.OK, "User updated successfully.");
                     }
                     catch (Exception ex)

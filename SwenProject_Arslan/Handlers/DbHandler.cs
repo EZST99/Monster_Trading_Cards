@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 public class DbHandler
 {
     private static string _connectionString;
+    private static NpgsqlTransaction _transaction;
+    private static NpgsqlConnection _connection;
+
 
     public DbHandler(string connectionString)
     {
