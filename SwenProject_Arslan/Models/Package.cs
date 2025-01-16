@@ -1,3 +1,4 @@
+using SwenProject_Arslan.DataAccess;
 using SwenProject_Arslan.Interfaces;
 
 namespace SwenProject_Arslan.Models;
@@ -10,12 +11,21 @@ public class Package
     {
     }
     
-    public static async Task Create(List<ICard> cards)
+    public static async Task Create()
     {
-        Package package = new()
+        Package package = new();
+        PackageDbHandler packageDbHandler = new();
+        try
         {
-            Cards = cards
-        };
+            await packageDbHandler.CreatePackageAsync();
+            Console.WriteLine("Package successfully created!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error creating package: {ex.Message}");
+            throw;
+        }
+        
 
         /*try
         {

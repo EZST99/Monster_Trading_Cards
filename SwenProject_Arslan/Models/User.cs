@@ -2,6 +2,7 @@
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Text.Json;
+using SwenProject_Arslan.DataAccess;
 using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
 
@@ -50,7 +51,7 @@ namespace SwenProject_Arslan.Models
             return computedHash.SequenceEqual(hash);
         }
         
-        public void Save(string token, Dictionary<string, object> updates)
+        public async Task Save(string token, Dictionary<string, object> updates)
         {
             // Authentifizieren und Autorisieren
             (bool Success, User? User) auth = Token.Authenticate(token);
@@ -82,7 +83,9 @@ namespace SwenProject_Arslan.Models
             }
 
             // Änderungen in der Datenbank speichern
-            DbHandler.UpdateAsync(this, "username", UserName).GetAwaiter().GetResult();
+            //DbHandler.UpdateAsync(this, "username", UserName).GetAwaiter().GetResult();
+            UserDbHandler userDbHandler = new();
+            await userDbHandler.UpdateUserAsync(token, auth.User.UserName, updates);
         }
 
         
@@ -99,7 +102,9 @@ namespace SwenProject_Arslan.Models
             };
             try
             {
-                await DbHandler.InsertAsync(user, "UserName");
+                //await DbHandler.InsertAsync(user, "UserName");
+                UserDbHandler userDbHandler = new();
+                await userDbHandler.CreateUserAsync(user);
             }
             catch (InvalidOperationException ex)
             {
@@ -110,7 +115,9 @@ namespace SwenProject_Arslan.Models
 
         public static async Task<User> GetUserByUserName(string userName)
         {
-            return await DbHandler.GetByColumnAsync<User>("Username", userName);
+            //return await DbHandler.GetByColumnAsync<User>("Username", userName);
+            UserDbHandler userDbHandler = new();
+            return await userDbHandler.GetUserByUserNameAsync(userName);
         }
 
         public static async Task<(bool Success, string Token)> Logon(string userName, string password)
