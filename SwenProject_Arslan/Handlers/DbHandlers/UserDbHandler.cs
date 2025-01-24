@@ -11,7 +11,7 @@ using SwenProject_Arslan.Models;
 namespace SwenProject_Arslan.DataAccess
 {
     /// <summary>
-    /// Handles database operations for User entities.
+    /// Handles database operations for User.
     /// </summary>
     public class UserDbHandler
     {
@@ -22,14 +22,10 @@ namespace SwenProject_Arslan.DataAccess
             _connectionString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
         }
 
-        /// <summary>
-        /// Creates a new user and inserts it into the database.
-        /// </summary>
-
-        private static string ConvertToDatabaseColumnName(string propertyName)
+        /*private static string ConvertToDatabaseColumnName(string propertyName)
         {
             return propertyName.ToLower();
-        }
+        }*/
 
         private async Task<bool> CheckIfUserExist(User user)
         {
@@ -51,7 +47,9 @@ namespace SwenProject_Arslan.DataAccess
             }
             return count > 0;
         }
-        
+        /// <summary>
+        /// Creates a new user and inserts it into the database.
+        /// </summary>
         public async Task CreateUserAsync(User user)
         {
             if (await CheckIfUserExist(user))
@@ -82,58 +80,52 @@ namespace SwenProject_Arslan.DataAccess
         /// <summary>
         /// Updates properties of an existing user in the database.
         /// </summary>
-        public async Task UpdateUserAsync(string token, string userName, Dictionary<string, object> updates)
+        public async Task UpdateUserAsync(string userName, string? password, int? coins, int? elo)
         {
-            // Authenticate
-            var auth = Token.Authenticate(token);
-            if (!auth.Success || auth.User!.UserName != userName)
+            var updateClauses = new List<string>();
+            var parameters = new List<NpgsqlParameter>();
+
+            if (password != null)
             {
-                throw new SecurityException("Unauthorized update attempt.");
+                updateClauses.Add("passwordhash = @password");
+                parameters.Add(new NpgsqlParameter("@password", User.HashPassword(password)));
             }
 
-            // Prepare updates
-            var updateQueries = new List<string>();
-            var parameters = new Dictionary<string, object> { { "@username", userName } };
-
-            int index = 0;
-            foreach (var update in updates)
+            if (coins.HasValue)
             {
-                // Validate property
-                if (!typeof(User).GetProperties().Any(p => p.Name.Equals(update.Key, StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new ArgumentException($"Invalid property name: {update.Key}");
-                }
-
-                string dbColumn = ConvertToDatabaseColumnName(update.Key);
-                updateQueries.Add($"{dbColumn} = @param{index}");
-
-                // Konvertiere den Wert in den erwarteten Typ
-                var targetType = typeof(User).GetProperty(update.Key)?.PropertyType;
-                var value = update.Value is JsonElement jsonElement
-                    ? jsonElement.Deserialize(targetType)
-                    : Convert.ChangeType(update.Value, targetType);
-
-                parameters[$"@param{index}"] = value;
-                index++;
+                updateClauses.Add("coins = @coins");
+                parameters.Add(new NpgsqlParameter("@coins", coins.Value));
             }
 
-            var query = $"UPDATE \"user\" SET {string.Join(", ", updateQueries)} WHERE username = @username;";
+            if (elo.HasValue)
+            {
+                updateClauses.Add("elo = @elo");
+                parameters.Add(new NpgsqlParameter("@elo", elo.Value));
+            }
+
+            if (updateClauses.Count == 0)
+            {
+                throw new ArgumentException("No updates provided.");
+            }
+
+            var query = $@"
+                UPDATE ""user""
+                SET {string.Join(", ", updateClauses)}
+                WHERE username = @username;";
 
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
 
             await using var command = new NpgsqlCommand(query, connection);
-            foreach (var param in parameters)
-            {
-                command.Parameters.AddWithValue(param.Key, param.Value);
-            }
+            command.Parameters.Add(new NpgsqlParameter("@username", userName));
+            command.Parameters.AddRange(parameters.ToArray());
 
             try
             {
                 var rowsAffected = await command.ExecuteNonQueryAsync();
                 if (rowsAffected == 0)
                 {
-                    throw new UserException("Update failed: No rows affected.");
+                    throw new UserException($"User '{userName}' not found.");
                 }
             }
             catch (Exception ex)
@@ -141,7 +133,6 @@ namespace SwenProject_Arslan.DataAccess
                 throw new UserException($"Error updating user: {ex.Message}");
             }
         }
-
 
         /// <summary>
         /// Retrieves a user by their username.

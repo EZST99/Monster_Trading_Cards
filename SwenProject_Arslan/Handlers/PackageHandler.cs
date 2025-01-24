@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
+using SwenProject_Arslan.Models.Cards;
 using SwenProject_Arslan.Server;
 using HttpStatusCode = System.Net.HttpStatusCode;
 
@@ -29,7 +30,6 @@ namespace SwenProject_Arslan.Handlers
                 return true;
             }
 
-            // Authorization überprüfen
             var authorizationHeader = e.Headers
                 .FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
 
@@ -41,7 +41,6 @@ namespace SwenProject_Arslan.Handlers
 
             var token = authorizationHeader.Substring("Bearer ".Length).Trim();
 
-            // Validierung des Tokens
             var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
             if (!isAuthenticated)
             {
@@ -51,10 +50,22 @@ namespace SwenProject_Arslan.Handlers
 
             try
             {
-                // Package erstellen
-                await Package.Create();
+                var cards = JsonSerializer.Deserialize<List<Card>>(e.Payload);
 
-                // Erfolgsantwort senden
+                if (cards == null || cards.Count != 5)
+                {
+                    throw new ArgumentException("A package must contain exactly 5 cards.");
+                }
+
+                foreach (var card in cards)
+                {
+                    card.ElementType = DetermineElementType(card.Name); 
+                    card.IsMonster = IsMonsterCard(card.Name); 
+                    card.MonsterType = card.IsMonster ? DetermineMonsterType(card.Name) : null; // Nur für Monster
+                }
+
+                await Package.Create(cards);
+
                 e.Reply(SwenProject_Arslan.Server.HttpStatusCode.OK, "Package created successfully.");
             }
             catch (Exception ex)
@@ -65,6 +76,35 @@ namespace SwenProject_Arslan.Handlers
             return true;
         }
 
+        private MonsterType DetermineMonsterType(string cardName)
+        {
+            foreach (var enumValue in Enum.GetValues(typeof(MonsterType)))
+            {
+                if(cardName.Contains(enumValue.ToString()))
+                    return (MonsterType)enumValue;
+            }
+            throw new ArgumentException($"Card name {cardName} is invalid. Must contain valid monster type.");
+        }
 
+        private bool IsMonsterCard(string cardName)
+        {
+            foreach (var enumValue in Enum.GetValues(typeof(MonsterType)))
+            {
+                if(cardName.Contains(enumValue.ToString()))
+                    return true;
+            }
+            return false;
+        }
+
+        private ElementType DetermineElementType(string cardName)
+        {
+            foreach (var enumValue in Enum.GetValues(typeof(ElementType)))
+            {
+                if(cardName.Contains(enumValue.ToString()))
+                    return (ElementType)enumValue;
+            }
+
+            return ElementType.Normal;
+        }
     }
 }

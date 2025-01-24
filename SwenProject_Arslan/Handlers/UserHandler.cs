@@ -125,25 +125,74 @@ namespace SwenProject_Arslan.Handlers
 
                     var token = tokenParts[1];
 
-                    // Parse JSON payload
-                    var updates = JsonSerializer.Deserialize<Dictionary<string, object>>(e.Payload);
-                    if (updates == null || updates.Count == 0)
+                    // Token validation
+                    var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
+                    if (!isAuthenticated || authenticatedUser == null)
                     {
-                        e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format.");
+                        e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
                         return true;
                     }
 
-                    // Benutzer abrufen und aktualisieren
-                    var user = await User.GetUserByUserName(username);
-                    if (user == null)
+                    var requestData = JsonSerializer.Deserialize<Dictionary<string, object>>(e.Payload);
+                    if (requestData == null || requestData.Count == 0)
                     {
-                        e.Reply(HttpStatusCode.NOT_FOUND, "User not found.");
+                        e.Reply(HttpStatusCode.BAD_REQUEST, "Invalid payload format. At least one field must be provided.");
                         return true;
+                    }
+
+                    string? password = null;
+                    int? coins = null;
+                    int? elo = null;
+
+                    if (requestData.ContainsKey("Password"))
+                    {
+                        var passwordElement = (JsonElement)requestData["Password"];
+                        if (passwordElement.ValueKind == JsonValueKind.String)
+                        {
+                            password = passwordElement.GetString();
+                        }
+                        else
+                        {
+                            throw new InvalidCastException("Password value is not a valid string.");
+                        }
+                    }
+
+                    if (requestData.ContainsKey("Coins"))
+                    {
+                        var coinsElement = (JsonElement)requestData["Coins"];
+                        if (coinsElement.TryGetInt32(out int coinsValue))
+                        {
+                            coins = coinsValue;
+                        }
+                        else
+                        {
+                            throw new InvalidCastException("Coins value is not a valid integer.");
+                        }
+                    }
+
+                    if (requestData.ContainsKey("ELO"))
+                    {
+                        var eloElement = (JsonElement)requestData["ELO"];
+                        if (eloElement.TryGetInt32(out int eloValue))
+                        {
+                            elo = eloValue;
+                        }
+                        else
+                        {
+                            throw new InvalidCastException("ELO value is not a valid integer.");
+                        }
                     }
 
                     try
                     {
-                        user.Save(token, updates);
+                        var user = await User.GetUserByUserName(username);
+                        if (user == null)
+                        {
+                            e.Reply(HttpStatusCode.NOT_FOUND, "User not found.");
+                            return true;
+                        }
+
+                        await user.Save(username, password, coins, elo);
                         e.Reply(HttpStatusCode.OK, "User updated successfully.");
                     }
                     catch (Exception ex)
@@ -153,6 +202,8 @@ namespace SwenProject_Arslan.Handlers
 
                     return true;
                 }
+
+
 
                 e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST, GET or PUT.");
                 return true;
@@ -199,7 +250,6 @@ namespace SwenProject_Arslan.Handlers
                             return true;
                         }
 
-                        // Warten auf das Ergebnis der Logon-Methode
                         var logonResult = await User.Logon(username, password);
 
                         if (logonResult.Success)

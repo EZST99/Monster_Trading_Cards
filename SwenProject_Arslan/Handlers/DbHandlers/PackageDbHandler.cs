@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Npgsql;
+using SwenProject_Arslan.Models;
 
 namespace SwenProject_Arslan.DataAccess
 {
@@ -19,8 +20,9 @@ namespace SwenProject_Arslan.DataAccess
         /// <summary>
         /// Creates a new package and inserts it into the database.
         /// </summary>
-        public async Task CreatePackageAsync()
+        public async Task<int> CreatePackageAsync()
         {
+            int packageId;
             const string query = "INSERT INTO Package DEFAULT VALUES RETURNING Id;";
 
             await using var connection = new NpgsqlConnection(_connectionString);
@@ -29,13 +31,14 @@ namespace SwenProject_Arslan.DataAccess
             try
             {
                 await using var command = new NpgsqlCommand(query, connection);
-                var packageId = (int)await command.ExecuteScalarAsync();
+                packageId = (int)await command.ExecuteScalarAsync();
                 Console.WriteLine($"Package created with ID: {packageId}");
             }
             catch (Exception ex)
             {
                 throw new Exception($"Error creating package: {ex.Message}");
             }
+            return packageId;
         }
     }
 }

@@ -51,41 +51,10 @@ namespace SwenProject_Arslan.Models
             return computedHash.SequenceEqual(hash);
         }
         
-        public async Task Save(string token, Dictionary<string, object> updates)
+        public async Task Save(string userName, string? password, int? coins, int? elo)
         {
-            // Authentifizieren und Autorisieren
-            (bool Success, User? User) auth = Token.Authenticate(token);
-            if (!auth.Success)
-            {
-                throw new AuthenticationException("Not authenticated.");
-            }
-            if (auth.User!.UserName != UserName)
-            {
-                throw new SecurityException("Trying to change other user's data.");
-            }
-
-            // Dynamisches Update der Eigenschaften
-            foreach (var update in updates)
-            {
-                var propertyInfo = typeof(User).GetProperty(update.Key);
-                if (propertyInfo == null || !propertyInfo.CanWrite)
-                {
-                    throw new ArgumentException($"Property '{update.Key}' does not exist or is read-only.");
-                }
-
-                // Konvertiere den Wert basierend auf dem Zieltyp
-                var targetType = propertyInfo.PropertyType;
-                var value = update.Value is JsonElement jsonElement
-                    ? jsonElement.Deserialize(targetType)
-                    : Convert.ChangeType(update.Value, targetType);
-
-                propertyInfo.SetValue(this, value);
-            }
-
-            // Änderungen in der Datenbank speichern
-            //DbHandler.UpdateAsync(this, "username", UserName).GetAwaiter().GetResult();
-            UserDbHandler userDbHandler = new();
-            await userDbHandler.UpdateUserAsync(token, auth.User.UserName, updates);
+            UserDbHandler userDbHandler = new UserDbHandler();
+            await userDbHandler.UpdateUserAsync(userName, password, coins, elo);
         }
 
         
