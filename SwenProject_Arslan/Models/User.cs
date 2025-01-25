@@ -5,6 +5,7 @@ using System.Text.Json;
 using SwenProject_Arslan.DataAccess;
 using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
+using SwenProject_Arslan.Models.Cards;
 
 namespace SwenProject_Arslan.Models
 {
@@ -16,7 +17,7 @@ namespace SwenProject_Arslan.Models
         public string PasswordHash { get; set; }
         public int Coins { get; set; }
         public int ELO { get; set; }
-        //public List<ICard> Stack { get; private set; }
+        public static List<Card> Stack { get; private set; } = new List<Card>();
         //public List<ICard> Deck { get; private set; }
 
         public User()
@@ -101,8 +102,53 @@ namespace SwenProject_Arslan.Models
             return (false, string.Empty);
         }
 
+        public static async Task BuyPackage(string userName)
+        {
+            var user = await GetUserByUserName(userName);
+            if (user == null)
+            {
+                throw new UserException($"User {userName} not found.");
+            }
+
+            if (user.Coins < 5)
+            {
+                throw new UserException($"User {userName} does not have enough coins");
+            }
+            
+            PackageDbHandler packageDbHandler = new();
+            var packageId = await packageDbHandler.SelectLatestPackageAsync();
+            if (packageId == null)
+            {
+                throw new InvalidOperationException("No unopened packages available.");
+            }
+            await AddCardsToStack(user, packageId);
+            await packageDbHandler.UpdatePackageIsOpenedAsync(packageId);
+            user.Coins -= 5;
+            await user.Save(userName, null, user.Coins, null);
+        }
+
+        private static async Task AddCardsToStack(User user, int packageId)
+        {
+            CardDbHandler cardDbHandler = new();
+            var cards = await cardDbHandler.GetCardsFromPackage(packageId);
+            if (cards == null || !cards.Any())
+            {
+                throw new InvalidOperationException($"No cards found for package {packageId}.");
+            }
+            Stack.AddRange(cards);
+            StackDbHandler stackDbHandler = new();
+            await stackDbHandler.AddCardsToStack(user, cards);
+
+        }
+
+        public static async Task<List<Card>> GetUserCards(string userName)
+        {
+            UserDbHandler userDbHandler = new();
+            var cards = await userDbHandler.GetAllCardsFromUser(userName);
+            return cards;
+        }
         
-      /*  public bool AddToStack(ICard card)
+        /*public bool AddToStack(Card card)
         {
             if (card != null)
             {
@@ -112,7 +158,7 @@ namespace SwenProject_Arslan.Models
         
             return false;
         }
-
+        /*
         public bool AddToDeck(ICard card)
         {
             if (card != null && Stack.Count > 0 && Deck.Count < 4)

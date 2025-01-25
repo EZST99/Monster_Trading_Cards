@@ -14,16 +14,20 @@ public class Package
     
     public static async Task Create(List<Card> cards)
     {
-        Package package = new();
         PackageDbHandler packageDbHandler = new();
         CardDbHandler cardDbHandler = new();
         try
         {
-            await packageDbHandler.CreatePackageAsync();
-            foreach (Card card in cards)
+            // Schritt 1: Paket erstellen und die ID abrufen
+            int packageId = await packageDbHandler.CreatePackageAsync();
+
+            // Schritt 2: packageId an jede Karte anhängen
+            foreach (var card in cards)
             {
+                card.PackageId = packageId;
                 await cardDbHandler.CreateCardAsync(card);
             }
+
             Console.WriteLine("Package successfully created!");
         }
         catch (Exception ex)
@@ -31,6 +35,8 @@ public class Package
             Console.WriteLine($"Error creating package: {ex.Message}");
             throw;
         }
+    
+
         
 
         /*try

@@ -33,6 +33,11 @@ namespace SwenProject_Arslan.Handlers
                 return HandleSessionRequest(e).GetAwaiter().GetResult();
             }
 
+            if (e.Path.StartsWith("/cards", StringComparison.OrdinalIgnoreCase))
+            {
+                return HandleCardRequest(e).GetAwaiter().GetResult();
+            }
+
             return false;
         }
 
@@ -280,6 +285,44 @@ namespace SwenProject_Arslan.Handlers
                 Console.WriteLine($"Unhandled exception: {ex}");
                 return true;
             }
+        }
+
+        private async Task<bool> HandleCardRequest(HttpSvrEventArgs e)
+        {
+            if (e.Method == "GET")
+            {
+                var username = e.Path.Split('/').LastOrDefault();
+                var authorizationHeader = e.Headers.FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                if (string.IsNullOrEmpty(authorizationHeader))
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Authorization header is missing.");
+                    return true;
+                }
+
+                var tokenParts = authorizationHeader.Split(' ');
+                if (tokenParts.Length != 2 || !tokenParts[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid authorization format.");
+                    return true;
+                }
+
+                var token = tokenParts[1];
+
+                // Token validation
+                var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
+                if (!isAuthenticated || authenticatedUser == null)
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
+                    return true;
+                }
+                var cards = await User.GetUserCards(authenticatedUser.UserName);
+                var cardsJson = JsonSerializer.Serialize(cards);
+                e.Reply(HttpStatusCode.OK, cardsJson);
+                return true;
+            }
+
+            return true;
         }
     }
 }

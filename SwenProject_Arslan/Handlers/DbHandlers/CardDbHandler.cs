@@ -1,5 +1,6 @@
 using Npgsql;
 using NpgsqlTypes;
+using SwenProject_Arslan.Models;
 using SwenProject_Arslan.Models.Cards;
 
 namespace SwenProject_Arslan.DataAccess;
@@ -44,6 +45,43 @@ public class CardDbHandler
         {
             throw new Exception($"Error creating card: {ex.Message}");
 
+        }
+    }
+
+    public async Task<List<Card>> GetCardsFromPackage(int packageId)
+    {
+        const string query = "SELECT id, packageId, name, damage, elementType, isMonster, monsterType FROM card WHERE packageId = @packageId";
+        await using var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+        
+        await using var command = new NpgsqlCommand(query, connection);
+        command.Parameters.AddWithValue("packageId", packageId);
+
+        try
+        {
+            await using var reader = await command.ExecuteReaderAsync();
+            List<Card> cards = new List<Card>();
+
+            while (reader.Read())
+            {
+                var card = new Card
+                {
+                    Id = reader.GetString(0),  // `id` ist VARCHAR
+                    PackageId = reader.GetInt32(1),  // `packageId` ist SERIAL/INTEGER
+                    Name = reader.GetString(2),  // `name` ist VARCHAR
+                    Damage = (float)reader.GetDouble(3),  // `damage` ist FLOAT
+                    ElementType = Enum.Parse<ElementType>(reader.GetString(4), true), // `elementType` ist VARCHAR
+                    IsMonster = reader.GetBoolean(5),  // `isMonster` ist BOOLEAN
+                    MonsterType = reader.IsDBNull(6) ? null : Enum.Parse<MonsterType>(reader.GetString(6), true) // `monsterType` ist VARCHAR oder NULL
+                };
+                cards.Add(card);
+            }
+            return cards;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }
