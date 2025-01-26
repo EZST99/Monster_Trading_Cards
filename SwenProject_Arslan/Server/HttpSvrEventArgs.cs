@@ -101,7 +101,43 @@ namespace SwenProject_Arslan.Server
             get; protected set;
         } = string.Empty;
 
+        public Dictionary<string, string> QueryParameters
+        {
+            get
+            {
+                var queryParameters = new Dictionary<string, string>();
+                var uriParts = Path.Split('?');
+                if (uriParts.Length > 1)
+                {
+                    var queryString = uriParts[1];
+                    var pairs = queryString.Split('&');
 
+                    foreach (var pair in pairs)
+                    {
+                        var keyValue = pair.Split('=', 2);
+                        if (keyValue.Length == 2)
+                        {
+                            var key = UriDecode(keyValue[0]);
+                            var value = UriDecode(keyValue[1]);
+                            queryParameters[key] = value;
+                        }
+                        else if (keyValue.Length == 1)
+                        {
+                            var key = UriDecode(keyValue[0]);
+                            queryParameters[key] = string.Empty;
+                        }
+                    }
+                }
+
+                return queryParameters;
+            }
+        }
+
+        private string UriDecode(string value)
+        {
+            return Uri.UnescapeDataString(value.Replace("+", " "));
+        }
+        
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // public methods                                                                                                   //

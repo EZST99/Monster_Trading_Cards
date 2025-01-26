@@ -18,7 +18,7 @@ namespace SwenProject_Arslan.Models
         public int Coins { get; set; }
         public int ELO { get; set; }
         public static List<Card> Stack { get; private set; } = new List<Card>();
-        //public List<ICard> Deck { get; private set; }
+        public static List<Card> Deck { get; private set; } = new List<Card>();
 
         public User()
         {}
@@ -141,86 +141,42 @@ namespace SwenProject_Arslan.Models
 
         }
 
-        public static async Task<List<Card>> GetUserCards(string userName)
+        private static async Task<bool> CheckIfCardsInStack(User user, List<String> deckCardIds)
+        {
+            var stack =  await GetUserStack(user.UserName);
+            var stackCardIds = stack.Select(card => card.Id).ToList();
+            foreach (var deckCardId in deckCardIds)
+            {
+                if (!stackCardIds.Contains(deckCardId))
+                {
+                    return false;
+                }
+                
+            }
+
+            return true;
+        }
+
+        public static async Task AddCardsToDeck(User user, List<String> cardIds)
+        {
+            await CheckIfCardsInStack(user, cardIds);
+            DeckDbHandler deckDbHandler = new();
+            await deckDbHandler.InsertIntoDeck(user, cardIds);
+        }
+
+        public static async Task<List<Card>> GetUserStack(string userName)
         {
             UserDbHandler userDbHandler = new();
-            var cards = await userDbHandler.GetAllCardsFromUser(userName);
-            return cards;
+            var stack = await userDbHandler.GetStackFromUser(userName);
+            return stack;
         }
         
-        /*public bool AddToStack(Card card)
+        public static async Task<List<Card>> GetUserDeck(string userName)
         {
-            if (card != null)
-            {
-                Stack.Add(card);
-                return true;
-            }
-        
-            return false;
+            UserDbHandler userDbHandler = new();
+            var deck = await userDbHandler.GetDeckFromUser(userName);
+            return deck;
         }
-        /*
-        public bool AddToDeck(ICard card)
-        {
-            if (card != null && Stack.Count > 0 && Deck.Count < 4)
-            {
-                Deck.Add(card);
-                return true;
-            }
-        
-            return false;
-        }
-
-        public bool RemoveFromStack(ICard card)
-        {
-            if (Stack.Contains(card))
-            {
-                Stack.Remove(card);
-                return true;
-            }
-        
-            return false;
-        }
-
-        public bool RemoveFromDeck(ICard card)
-        {
-            if (Deck.Contains(card))
-            {
-                Deck.Remove(card);
-                return true;
-            }
-        
-            return false;
-        }
-
-        public bool BuyPackage()
-        {
-            if (Coins >= 5)
-            {
-                Coins -= 5;
-                var newPackage = PackageGenerator.GeneratePackage();
-                for (int i = 0; i < newPackage.Count; i++)
-                {
-                    AddToStack(newPackage[i]);
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public void SelectCardsForDeck()
-        {
-            var cards = Stack
-                .OrderByDescending(card => card.Damage)
-                .Take(4)
-                .ToList();
-        }
-        
-        public ICard PlayCard()
-        {
-            return Deck[RandomNumberGenerator.GetInt32(0, Deck.Count - 1)];
-        }*/
     }
     
     

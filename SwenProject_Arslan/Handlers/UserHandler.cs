@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
+using SwenProject_Arslan.Models.Cards;
 using SwenProject_Arslan.Repositories;
 using SwenProject_Arslan.Server;
 
@@ -36,6 +37,11 @@ namespace SwenProject_Arslan.Handlers
             if (e.Path.StartsWith("/cards", StringComparison.OrdinalIgnoreCase))
             {
                 return HandleCardRequest(e).GetAwaiter().GetResult();
+            }
+
+            if (e.Path.StartsWith("/deck", StringComparison.OrdinalIgnoreCase))
+            {
+                return HandleDeckRequest(e).GetAwaiter().GetResult();
             }
 
             return false;
@@ -291,7 +297,6 @@ namespace SwenProject_Arslan.Handlers
         {
             if (e.Method == "GET")
             {
-                var username = e.Path.Split('/').LastOrDefault();
                 var authorizationHeader = e.Headers.FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
 
                 if (string.IsNullOrEmpty(authorizationHeader))
@@ -316,12 +321,129 @@ namespace SwenProject_Arslan.Handlers
                     e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
                     return true;
                 }
-                var cards = await User.GetUserCards(authenticatedUser.UserName);
-                var cardsJson = JsonSerializer.Serialize(cards);
+                var stack = await User.GetUserStack(authenticatedUser.UserName);
+                var cardsJson = JsonSerializer.Serialize(stack);
                 e.Reply(HttpStatusCode.OK, cardsJson);
                 return true;
             }
+            
+            e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use GET.");
+            return true;
+        }
 
+        private async Task<bool> HandleDeckRequest(HttpSvrEventArgs e)
+        {
+            if (e.Method == "GET")
+            {
+                var authorizationHeader = e.Headers.FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                if (string.IsNullOrEmpty(authorizationHeader))
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Authorization header is missing.");
+                    return true;
+                }
+
+                var tokenParts = authorizationHeader.Split(' ');
+                if (tokenParts.Length != 2 || !tokenParts[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid authorization format.");
+                    return true;
+                }
+
+                var token = tokenParts[1];
+
+                // Token validation
+                var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
+                if (!isAuthenticated || authenticatedUser == null)
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
+                    return true;
+                }
+
+                try
+                {
+                    // Deck des Benutzers abrufen
+                    var deck = await User.GetUserDeck(authenticatedUser.UserName);
+
+                    if (deck == null || !deck.Any())
+                    {
+                        e.Reply(HttpStatusCode.OK, "[]"); // Leeres Deck zurückgeben
+                        return true;
+                    }
+
+                    // Prüfen, ob `format=plain` gesetzt ist
+                    var isPlainFormat = e.QueryParameters.TryGetValue("format", out var format) && format.Equals("plain", StringComparison.OrdinalIgnoreCase);
+
+                    if (isPlainFormat)
+                    {
+                        // Deck in Plain-Text-Format umwandeln
+                        var plainTextDeck = string.Join(Environment.NewLine, deck.Select((card, index) => $"Card {index + 1}: {card.Id} - {card.Name} - {card.Damage} Damage"));
+                        e.Reply(HttpStatusCode.OK, plainTextDeck);
+                    }
+                    else
+                    {
+                        // Deck als JSON zurückgeben
+                        var cardsJson = JsonSerializer.Serialize(deck);
+                        e.Reply(HttpStatusCode.OK, cardsJson);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    e.Reply(HttpStatusCode.INTERNAL_SERVER_ERROR, $"An error occurred: {ex.Message}");
+                }
+
+                return true;
+            }
+
+
+            if (e.Method == "PUT")
+            {
+                var authorizationHeader = e.Headers.FirstOrDefault(h => h.Name.Equals("Authorization", StringComparison.OrdinalIgnoreCase))?.Value;
+
+                if (string.IsNullOrEmpty(authorizationHeader))
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Authorization header is missing.");
+                    return true;
+                }
+
+                var tokenParts = authorizationHeader.Split(' ');
+                if (tokenParts.Length != 2 || !tokenParts[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid authorization format.");
+                    return true;
+                }
+
+                var token = tokenParts[1];
+
+                // Token validation
+                var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
+                if (!isAuthenticated || authenticatedUser == null)
+                {
+                    e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
+                    return true;
+                }
+                try
+                {
+                    var cards = JsonSerializer.Deserialize<List<String>>(e.Payload);
+
+                    if (cards == null || cards.Count != 4)
+                    {
+                        throw new ArgumentException("The deck must contain exactly 4 cards.");
+                    }
+                    
+                    await User.AddCardsToDeck(authenticatedUser, cards);
+                    
+                    e.Reply(HttpStatusCode.OK, "Deck created successfully.");
+                }
+                catch (Exception ex)
+                {
+                    e.Reply(HttpStatusCode.INTERNAL_SERVER_ERROR, $"An error occurred: {ex.Message}");
+                }
+
+                return true;
+            }
+            
+            e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use GET or PUT.");
             return true;
         }
     }
