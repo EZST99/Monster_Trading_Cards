@@ -1,84 +1,125 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
+using SwenProject_Arslan.Handlers;
 
 namespace SwenProject_Arslan.Server
 {
-    /// <summary>This class implements a HTTP server.</summary>
+    /// <summary>This class implements a HTTP server with battle logic.</summary>
     public sealed class HttpSvr
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // private members                                                                                                  //
+        // private members
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>TCP listener instance.</summary>
-        private TcpListener? _Listener;  // hört auf einen bestimmten Port und meldet sich, falls was einkommt und
-                                         // gibt einen TCP client zurück mit dem man stream bearbeiten und eine response zurückschicken kann
+        private TcpListener? _Listener;
 
+        /// <summary>Queue for players waiting for a battle.</summary>
+        private readonly Queue<TcpClient> waitingClients = new();
 
+        /// <summary>Queue for request data associated with waiting clients.</summary>
+        private readonly Queue<string> tempData = new();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public events                                                                                                    //
+        // public events
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>Is raised when incoming data is available.</summary>
         public event HttpSvrEventHandler? Incoming;
 
-
-
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public properties                                                                                                //
+        // public properties
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>Gets if the server is available.</summary>
-        public bool Active // lesen ob er läuft oder nicht
+        public bool Active
         {
             get; private set;
         } = false;
 
-
-
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // public methods                                                                                                   //
+        // public methods
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>Runs the server.</summary>
-        public void Run() 
+        public void Run()
         {
-            if(Active) return; // damit nicht mehrmals gestartet werden kann, man könnte exception werfen
+            if (Active) return;
 
-            Active = true; // jetzt active
-            _Listener = new(IPAddress.Parse("127.0.0.1"), 10001); // auf welche ip adresse soll gehört werden und bei welchem host(localhost)
-            _Listener.Start(); 
+            Active = true;
+            _Listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 10001);
+            _Listener.Start();
 
-            byte[] buf = new byte[256]; // buffer damit im buffer der Stream verarbeitet werden kann den der listener zurückgibt
+            Console.WriteLine("Server is running and waiting for connections...");
 
-            while(Active)
+            while (Active)
             {
-                TcpClient client = _Listener.AcceptTcpClient(); // solange der listener läuft, geht das,
-                                                                // accepttcpclient hält den litener an bis eine tcp verbindung besteht
-                string data = string.Empty; 
-                
-                while(client.GetStream().DataAvailable || string.IsNullOrWhiteSpace(data)) // mit der methode bekommt man die daten, die über tcp als stream hineinkommen
-                                                                                           // DataAvailable wird aufgerufen und wenn nichts in data drinnen steht ist es das erste Mal, dass wir lesen,
-                                                                                           // weil der initial false ist
-                                                                                           // und sobald alle gelesen wird ist DataAvailable false und Schleife endet
-                {
-                    int n = client.GetStream().Read(buf, 0, buf.Length); // mit read lesen wir in einen buffer daten rein, übergeben buffer, den anfangspunkt wo man zu lesen beginnt (stream = haufen von bytes)
-                                                                         // wir beginnen bei 0 zu lesen bis zum Ende des buffers
-                    data += Encoding.ASCII.GetString(buf, 0, n); // wir encoden damit aus den Bytes ein String gemacht wird
-                }
-
-                Incoming?.Invoke(this, new(client, data)); // wir machen daraus HttpSvrEventArgs um sie "eleganter" darzustellen
-                
+                TcpClient client = _Listener.AcceptTcpClient();
+                Task.Run(() => HandleClient(client)); // Bearbeitung in eigenem Thread
             }
         }
 
+        /// <summary>Handles an individual client connection.</summary>
+        private void HandleClient(TcpClient client)
+        {
+            string data = string.Empty;
+            byte[] buf = new byte[256];
+
+            while (client.GetStream().DataAvailable || string.IsNullOrWhiteSpace(data))
+            {
+                int read = client.GetStream().Read(buf, 0, buf.Length);
+                data += Encoding.ASCII.GetString(buf, 0, read);
+            }
+
+            Console.WriteLine($"Request received:\n{data}");
+
+            // Wenn Anfrage Battle
+            if (data.Contains("battle", StringComparison.OrdinalIgnoreCase))
+            {
+                lock (waitingClients)
+                {
+                    // Spieler in die Warteschlange 
+                    waitingClients.Enqueue(client);
+                    tempData.Enqueue(data);
+
+                    if (waitingClients.Count >= 2)
+                    {
+                        // Zwei Spieler verfügbar: Battle starten
+                        var player1 = waitingClients.Dequeue();
+                        var player2 = waitingClients.Dequeue();
+                        var data1 = tempData.Dequeue();
+                        var data2 = tempData.Dequeue();
+
+                        Console.WriteLine("Two players matched. Starting battle...");
+                        HttpSvrEventArgs e1 = new HttpSvrEventArgs(player1, data1);
+                        HttpSvrEventArgs e2 = new HttpSvrEventArgs(player2, data2);
+                        
+                        
+                        //await BattleHandler.joinBattle(e1, e2);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Player added to the battle queue. Waiting for an opponent...");
+                    }
+                }
+            }
+            else
+            {
+                // Andere Anfragen weiterleiten
+                Incoming?.Invoke(this, new(client, data));
+            }
+        }
 
         /// <summary>Stops the server.</summary>
-        public void Stop()  // in unseren fall nicht benutzt, muss nicht gestoppt werden, weil wir den server eh nur für eine sachen verwenden?
+        public void Stop()
         {
             Active = false;
+            _Listener?.Stop();
+            Console.WriteLine("Server stopped.");
         }
     }
 }
