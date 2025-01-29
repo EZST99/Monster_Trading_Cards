@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using SwenProject_Arslan.DataAccess;
 using SwenProject_Arslan.Exceptions;
+using SwenProject_Arslan.Handlers.DbHandlers;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models.Cards;
 
@@ -17,6 +18,9 @@ namespace SwenProject_Arslan.Models
         public string PasswordHash { get; set; }
         public int Coins { get; set; }
         public int ELO { get; set; }
+        public string? Name { get; set; }
+        public string? Bio { get; set; }
+        public string? Image { get; set; }
         public static List<Card> Stack { get; private set; } = new List<Card>();
         public static List<Card> Deck { get; private set; } = new List<Card>();
 
@@ -29,6 +33,9 @@ namespace SwenProject_Arslan.Models
             PasswordHash = HashPassword(password);
             Coins = 20;
             ELO = 100;
+            Name = null;
+            Bio = null;
+            Image = null;
         }
         
         public static string HashPassword(string password)
@@ -52,10 +59,10 @@ namespace SwenProject_Arslan.Models
             return computedHash.SequenceEqual(hash);
         }
         
-        public async Task Save(string userName, string? password, int? coins, int? elo)
+        public async Task Save(string userName, string? name, string? bio, string? image, int? elo, int? coins)
         {
-            UserDbHandler userDbHandler = new UserDbHandler();
-            await userDbHandler.UpdateUserAsync(userName, password, coins, elo);
+            var userDbHandler = DbHandlerFactory.GetUserDbHandler();
+            await userDbHandler.UpdateUserAsync(userName, name, bio, image, coins, elo);
         }
 
         
@@ -73,7 +80,7 @@ namespace SwenProject_Arslan.Models
             try
             {
                 //await DbHandler.InsertAsync(user, "UserName");
-                UserDbHandler userDbHandler = new();
+                var userDbHandler = DbHandlerFactory.GetUserDbHandler();
                 await userDbHandler.CreateUserAsync(user);
             }
             catch (InvalidOperationException ex)
@@ -86,7 +93,7 @@ namespace SwenProject_Arslan.Models
         public static async Task<User> GetUserByUserName(string userName)
         {
             //return await DbHandler.GetByColumnAsync<User>("Username", userName);
-            UserDbHandler userDbHandler = new();
+            var userDbHandler = DbHandlerFactory.GetUserDbHandler();
             return await userDbHandler.GetUserByUserNameAsync(userName);
         }
 
@@ -115,8 +122,8 @@ namespace SwenProject_Arslan.Models
                 throw new UserException($"User {userName} does not have enough coins");
             }
             
-            PackageDbHandler packageDbHandler = new();
-            var packageId = await packageDbHandler.SelectLatestPackageAsync();
+            var packageDbHandler = DbHandlerFactory.GetPackageDbHandler();
+            var packageId = await packageDbHandler.SelectPackageAsync();
             if (packageId == null)
             {
                 throw new InvalidOperationException("No unopened packages available.");
@@ -124,19 +131,19 @@ namespace SwenProject_Arslan.Models
             await AddCardsToStack(user, packageId);
             await packageDbHandler.UpdatePackageIsOpenedAsync(packageId);
             user.Coins -= 5;
-            await user.Save(userName, null, user.Coins, null);
+            await user.Save(userName, null, null, null, null, user.Coins);
         }
 
         private static async Task AddCardsToStack(User user, int packageId)
         {
-            CardDbHandler cardDbHandler = new();
+            var cardDbHandler = DbHandlerFactory.GetCardDbHandler();
             var cards = await cardDbHandler.GetCardsFromPackage(packageId);
             if (cards == null || !cards.Any())
             {
                 throw new InvalidOperationException($"No cards found for package {packageId}.");
             }
             Stack.AddRange(cards);
-            StackDbHandler stackDbHandler = new();
+            var stackDbHandler = DbHandlerFactory.GetStackDbHandler();
             await stackDbHandler.AddCardsToStack(user, cards);
 
         }
@@ -160,20 +167,20 @@ namespace SwenProject_Arslan.Models
         public static async Task AddCardsToDeck(User user, List<String> cardIds)
         {
             await CheckIfCardsInStack(user, cardIds);
-            DeckDbHandler deckDbHandler = new();
+            var deckDbHandler = DbHandlerFactory.GetDeckDbHandler();
             await deckDbHandler.InsertIntoDeck(user, cardIds);
         }
 
         public static async Task<List<Card>> GetUserStack(string userName)
         {
-            UserDbHandler userDbHandler = new();
+            var userDbHandler = DbHandlerFactory.GetUserDbHandler();
             var stack = await userDbHandler.GetStackFromUser(userName);
             return stack;
         }
         
         public static async Task<List<Card>> GetUserDeck(string userName)
         {
-            UserDbHandler userDbHandler = new();
+            var userDbHandler = DbHandlerFactory.GetUserDbHandler();
             var deck = await userDbHandler.GetDeckFromUser(userName);
             return deck;
         }

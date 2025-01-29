@@ -18,9 +18,13 @@ namespace SwenProject_Arslan.DataAccess
     {
         private readonly string _connectionString;
 
-        public UserDbHandler()
+        // Standardkonstruktor für Produktion
+        public UserDbHandler() : this("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg") { }
+
+        // Konstruktor mit ConnectionString für Tests
+        public UserDbHandler(string connectionString)
         {
-            _connectionString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
+            _connectionString = connectionString;
         }
 
         /*private static string ConvertToDatabaseColumnName(string propertyName)
@@ -35,19 +39,19 @@ namespace SwenProject_Arslan.DataAccess
             await connection.OpenAsync();
 
             await using var command = new NpgsqlCommand(query, connection);
-            command.Parameters.AddWithValue("@UserName", user.UserName);
-            int count;
+            command.Parameters.AddWithValue("@username", user.UserName); // "username" war falsch geschrieben
+
             try
             {
                 var result = await command.ExecuteScalarAsync();
-                count = int.Parse(result.ToString());
+                return Convert.ToInt32(result) > 0;
             }
             catch (Exception ex)
             {
                 throw new UserException($"Error checking if user exists: {ex.Message}");
             }
-            return count > 0;
         }
+
         /// <summary>
         /// Creates a new user and inserts it into the database.
         /// </summary>
@@ -81,27 +85,39 @@ namespace SwenProject_Arslan.DataAccess
         /// <summary>
         /// Updates properties of an existing user in the database.
         /// </summary>
-        public async Task UpdateUserAsync(string userName, string? password, int? coins, int? elo)
+        public async Task UpdateUserAsync(string userName, string? name, string? bio, string? image, int? coins, int? elo)
         {
             var updateClauses = new List<string>();
             var parameters = new List<NpgsqlParameter>();
 
-            if (password != null)
+            if (name != null)
             {
-                updateClauses.Add("passwordhash = @password");
-                parameters.Add(new NpgsqlParameter("@password", User.HashPassword(password)));
+                updateClauses.Add("Name = @Name");
+                parameters.Add(new NpgsqlParameter("@Name", name));
+            }
+
+            if (bio != null)
+            {
+                updateClauses.Add("Bio = @Bio");
+                parameters.Add(new NpgsqlParameter("@Bio", bio));
+            }
+
+            if (image != null)
+            {
+                updateClauses.Add("Image = @Image");
+                parameters.Add(new NpgsqlParameter("@Image", image));
             }
 
             if (coins.HasValue)
             {
-                updateClauses.Add("coins = @coins");
-                parameters.Add(new NpgsqlParameter("@coins", coins.Value));
+                updateClauses.Add("Coins = @Coins");
+                parameters.Add(new NpgsqlParameter("@Coins", coins.Value));
             }
 
             if (elo.HasValue)
             {
-                updateClauses.Add("elo = @elo");
-                parameters.Add(new NpgsqlParameter("@elo", elo.Value));
+                updateClauses.Add("Elo = @Elo");
+                parameters.Add(new NpgsqlParameter("@Elo", elo.Value));
             }
 
             if (updateClauses.Count == 0)
@@ -110,9 +126,9 @@ namespace SwenProject_Arslan.DataAccess
             }
 
             var query = $@"
-                UPDATE ""user""
-                SET {string.Join(", ", updateClauses)}
-                WHERE username = @username;";
+        UPDATE ""user""
+        SET {string.Join(", ", updateClauses)}
+        WHERE username = @username;";
 
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -135,12 +151,16 @@ namespace SwenProject_Arslan.DataAccess
             }
         }
 
+
         /// <summary>
         /// Retrieves a user by their username.
         /// </summary>
-        public async Task<User> GetUserByUserNameAsync(string userName)
+        public async Task<User> GetUserByUserNameAsync(string userName) 
         {
-            const string query = "SELECT UserName, PasswordHash, Coins, ELO FROM \"user\" WHERE UserName = @UserName;";
+            const string query = @"
+        SELECT UserName, PasswordHash, Coins, ELO, Name, Bio, Image 
+        FROM ""user"" 
+        WHERE UserName = @UserName;";
 
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -158,7 +178,10 @@ namespace SwenProject_Arslan.DataAccess
                         UserName = reader.GetString(0),
                         PasswordHash = reader.GetString(1),
                         Coins = reader.GetInt32(2),
-                        ELO = reader.GetInt32(3)
+                        ELO = reader.GetInt32(3),
+                        Name = reader.IsDBNull(4) ? null : reader.GetString(4),
+                        Bio = reader.IsDBNull(5) ? null : reader.GetString(5),
+                        Image = reader.IsDBNull(6) ? null : reader.GetString(6)
                     };
                 }
 

@@ -7,5 +7,6 @@ public enum MonsterType
     Ork,
     Knight,
     Kraken,
-    FireElf
+    FireElf,
+    Wizard
 }

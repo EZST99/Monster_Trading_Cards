@@ -26,7 +26,7 @@ public class PackageHandler : Handler, IHandler
     {
         if (e.Method != "POST")
         {
-            e.Reply(SwenProject_Arslan.Server.HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
+            e.Reply(HttpStatusCodes.BAD_REQUEST, "Method not allowed. Use POST.");
             return true;
         }
 
@@ -35,7 +35,7 @@ public class PackageHandler : Handler, IHandler
 
         if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
         {
-            e.Reply(SwenProject_Arslan.Server.HttpStatusCode.UNAUTHORIZED, "Authorization header is missing or invalid.");
+            e.Reply(HttpStatusCodes.UNAUTHORIZED, "Authorization header is missing or invalid.");
             return true;
         }
 
@@ -44,7 +44,13 @@ public class PackageHandler : Handler, IHandler
         var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
         if (!isAuthenticated)
         {
-            e.Reply(SwenProject_Arslan.Server.HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
+            e.Reply(HttpStatusCodes.UNAUTHORIZED, "Invalid or expired token.");
+            return true;
+        }
+
+        if (authenticatedUser.UserName != "admin")
+        {
+            e.Reply(HttpStatusCodes.UNAUTHORIZED, "Only admin can create packages.");
             return true;
         }
 
@@ -66,11 +72,11 @@ public class PackageHandler : Handler, IHandler
 
             await Package.Create(cards);
 
-            e.Reply(SwenProject_Arslan.Server.HttpStatusCode.OK, "Package created successfully.");
+            e.Reply(HttpStatusCodes.OK, "Package created successfully.");
         }
         catch (Exception ex)
         {
-            e.Reply(SwenProject_Arslan.Server.HttpStatusCode.INTERNAL_SERVER_ERROR, $"An error occurred: {ex.Message}");
+            e.Reply(HttpStatusCodes.INTERNAL_SERVER_ERROR, $"An error occurred: {ex.Message}");
         }
 
         return true;

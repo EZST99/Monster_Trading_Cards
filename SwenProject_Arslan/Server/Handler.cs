@@ -38,7 +38,7 @@ namespace SwenProject_Arslan.Server
             {
                 if(i.Handle(e)) return; // kannst du das handlen? Wenn ja handlet Handler und ich bin fertig
             }
-            e.Reply(HttpStatusCode.BAD_REQUEST);
+            e.Reply(HttpStatusCodes.BAD_REQUEST);
         }
 
 

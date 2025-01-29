@@ -8,9 +8,13 @@ public class StackDbHandler
 {
     private readonly string _connectionString;
 
-    public StackDbHandler()
+    // Standardkonstruktor für Produktion
+    public StackDbHandler() : this("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg") { }
+
+    // Konstruktor mit ConnectionString für Tests
+    public StackDbHandler(string connectionString)
     {
-        _connectionString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
+        _connectionString = connectionString;
     }
 
     public async Task AddCardsToStack(User user, List<Card> cards)

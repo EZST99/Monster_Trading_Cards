@@ -1,4 +1,5 @@
 using SwenProject_Arslan.DataAccess;
+using SwenProject_Arslan.Handlers.DbHandlers;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models.Cards;
 
@@ -14,8 +15,8 @@ public class Package
     
     public static async Task Create(List<Card> cards)
     {
-        PackageDbHandler packageDbHandler = new();
-        CardDbHandler cardDbHandler = new();
+        var packageDbHandler = DbHandlerFactory.GetPackageDbHandler();
+        var cardDbHandler = DbHandlerFactory.GetCardDbHandler();
         try
         {
             // Schritt 1: Paket erstellen und die ID abrufen
@@ -35,33 +36,6 @@ public class Package
             Console.WriteLine($"Error creating package: {ex.Message}");
             throw;
         }
-    
-
-        
-
-        /*try
-        {
-            // Beginne eine Transaktion für Paket- und Karteninserts
-            await DbHandler.BeginTransactionAsync();
-
-            // Füge das Paket ein
-            int packageId = await DbHandler.InsertAsync(package, "id");
-
-            // Füge die Karten ein, verknüpft mit der Paket-ID
-            foreach (var card in cards)
-            {
-                card.PackageId = packageId; // Stelle sicher, dass dies in der Card-Klasse existiert
-                await DbHandler.InsertAsync(card, "id");
-            }
-
-            // Bestätige die Transaktion
-            await DbHandler.CommitTransactionAsync();
-        }
-        catch (Exception ex)
-        {
-            await DbHandler.RollbackTransactionAsync();
-            Console.WriteLine($"Error: {ex.Message}");
-        }*/
     }
 
 }

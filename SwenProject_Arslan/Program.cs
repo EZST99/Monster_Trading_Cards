@@ -2,6 +2,7 @@
 using SwenProject_Arslan.Models;
 using SwenProject_Arslan.Repositories;
 using SwenProject_Arslan.Server;
+using SwenProject_Arslan.Handlers.DbHandlers;
 
 namespace SwenProject_Arslan
 {
@@ -16,6 +17,7 @@ namespace SwenProject_Arslan
         /// <param name="args">Command line arguments.</param>
         static async Task Main(string[] args)
         {
+            DbHandlerFactory.Initialize("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg");
             HttpSvr svr = new();
             svr.Incoming += Svr_Incoming;
             //svr.Incoming *= (sender, e) => { Handler.HandleEvent(e); };

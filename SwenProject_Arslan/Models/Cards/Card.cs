@@ -10,9 +10,18 @@ public class Card
     public bool IsMonster { get; set; }
     public MonsterType? MonsterType { get; set; }
     
-    double getDamage(Card otherCard)
+    public float GetDamage(Card otherCard)
     {
-        if(!IsMonster)
+        if (!IsMonster && ElementType == ElementType.Water && otherCard.IsMonster && otherCard.MonsterType == Models.MonsterType.Knight)
+        {
+            return float.MaxValue; // Sofortiger Tod des Ritters
+        }
+
+        if (otherCard.IsMonster && otherCard.MonsterType == Models.MonsterType.Kraken && !IsMonster)
+        {
+            return 0;
+        }
+        if (!(IsMonster && otherCard.IsMonster))
         {
             switch (ElementType)
             {
@@ -34,10 +43,24 @@ public class Card
                     if (otherCard.ElementType == ElementType.Fire)
                         return Damage / 2;
                     break;
-                default:
-                    return Damage;
             }
         }
+
+        if (MonsterType == Models.MonsterType.Goblin && otherCard.MonsterType == Models.MonsterType.Dragon)
+        {
+            return 0;
+        }
+
+        if (MonsterType == Models.MonsterType.Ork && otherCard.MonsterType == Models.MonsterType.Wizard)
+        {
+            return 0;
+        }
+
+        if (MonsterType == Models.MonsterType.Dragon && otherCard.MonsterType == Models.MonsterType.FireElf)
+        {
+            return 0;
+        }
+        
         return Damage;
     }
 }

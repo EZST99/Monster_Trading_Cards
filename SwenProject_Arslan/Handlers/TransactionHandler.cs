@@ -20,7 +20,7 @@ public class TransactionHandler : Handler, IHandler
     {
         if (e.Method != "POST")
         {
-            e.Reply(HttpStatusCode.BAD_REQUEST, "Method not allowed. Use POST.");
+            e.Reply(HttpStatusCodes.BAD_REQUEST, "Method not allowed. Use POST.");
             return true;
         }
 
@@ -29,7 +29,7 @@ public class TransactionHandler : Handler, IHandler
 
         if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
         {
-            e.Reply(HttpStatusCode.UNAUTHORIZED, "Authorization header is missing or invalid.");
+            e.Reply(HttpStatusCodes.UNAUTHORIZED, "Authorization header is missing or invalid.");
             return true;
         }
 
@@ -38,18 +38,18 @@ public class TransactionHandler : Handler, IHandler
         var (isAuthenticated, authenticatedUser) = Token.Authenticate(token);
         if (!isAuthenticated)
         {
-            e.Reply(HttpStatusCode.UNAUTHORIZED, "Invalid or expired token.");
+            e.Reply(HttpStatusCodes.UNAUTHORIZED, "Invalid or expired token.");
             return true;
         }
 
         try
         {
             await User.BuyPackage(authenticatedUser.UserName);
-            e.Reply(HttpStatusCode.OK, "Package bought successfully.");
+            e.Reply(HttpStatusCodes.OK, "Package bought successfully.");
         }
         catch (Exception ex)
         {
-            e.Reply(HttpStatusCode.INTERNAL_SERVER_ERROR, $"An error occurred: {ex.Message}");
+            e.Reply(HttpStatusCodes.INTERNAL_SERVER_ERROR, $"An error occurred: {ex.Message}");
         }
 
         return true;

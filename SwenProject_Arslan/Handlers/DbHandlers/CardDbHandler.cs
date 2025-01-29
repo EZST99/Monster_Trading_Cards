@@ -9,9 +9,13 @@ public class CardDbHandler
 {
     private readonly string _connectionString;
 
-    public CardDbHandler()
+    // Standardkonstruktor für Produktion
+    public CardDbHandler() : this("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg") { }
+
+    // Konstruktor mit ConnectionString für Tests
+    public CardDbHandler(string connectionString)
     {
-        _connectionString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
+        _connectionString = connectionString;
     }
 
     public async Task CreateCardAsync(Card card)
@@ -41,9 +45,9 @@ public class CardDbHandler
         {
             await command.ExecuteNonQueryAsync();
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            throw new Exception($"Error creating card: {ex.Message}");
+            throw new Exception($"Error creating card: {e.Message}");
 
         }
     }
@@ -80,8 +84,7 @@ public class CardDbHandler
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            throw new Exception($"Error getting cards from package: {e.Message}");
         }
     }
 }

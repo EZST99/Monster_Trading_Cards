@@ -1,6 +1,6 @@
 ﻿namespace SwenProject_Arslan.Server
 {
-    public static class HttpStatusCode
+    public static class HttpStatusCodes
     {
         public const int OK = 200;
 

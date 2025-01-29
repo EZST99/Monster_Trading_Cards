@@ -8,38 +8,63 @@ public class DeckDbHandler
 {
     private readonly string _connectionString;
 
-    public DeckDbHandler()
+    // Standardkonstruktor für Produktion
+    public DeckDbHandler() : this("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg") { }
+
+    // Konstruktor mit ConnectionString für Tests
+    public DeckDbHandler(string connectionString)
     {
-        _connectionString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
+        _connectionString = connectionString;
     }
     
-    public async Task InsertIntoDeck(User user, List<String> cardIds)
+    public async Task InsertIntoDeck(User user, List<string> cardIds)
     {
+        const string checkQuery = "SELECT COUNT(*) FROM stack WHERE userName=@userName AND cardId=@cardId";
         const string deleteQuery = "DELETE FROM deck WHERE userName=@userName";
-        const string insterQuery = "INSERT INTO deck (userName, cardId) VALUES (@userName, @cardId)";
-        
+        const string insertQuery = "INSERT INTO deck (userName, cardId) VALUES (@userName, @cardId)";
+
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
+        
+        await using var transaction = await connection.BeginTransactionAsync(); 
 
         try
         {
-            await using (var deleteCommand = new NpgsqlCommand(deleteQuery, connection))
+            foreach (var card in cardIds)
+            {
+                await using var checkCommand = new NpgsqlCommand(checkQuery, connection, transaction);
+                checkCommand.Parameters.AddWithValue("@userName", user.UserName);
+                checkCommand.Parameters.AddWithValue("@cardId", card);
+
+                var count = (long)await checkCommand.ExecuteScalarAsync(); 
+
+                if (count == 0)
+                {
+                    throw new Exception($"Error: Card {card} is not in the user's stack and cannot be added to the deck.");
+                }
+            }
+
+            await using (var deleteCommand = new NpgsqlCommand(deleteQuery, connection, transaction))
             {
                 deleteCommand.Parameters.AddWithValue("@userName", user.UserName);
                 await deleteCommand.ExecuteNonQueryAsync();
             }
+
             foreach (var card in cardIds)
             {
-                await using var insertCommand = new NpgsqlCommand(insterQuery, connection);
+                await using var insertCommand = new NpgsqlCommand(insertQuery, connection, transaction);
                 insertCommand.Parameters.AddWithValue("@userName", user.UserName);
                 insertCommand.Parameters.AddWithValue("@cardId", card);
-
                 await insertCommand.ExecuteNonQueryAsync();
             }
+
+            await transaction.CommitAsync(); 
         }
         catch (Exception ex)
         {
-            throw new Exception($"Error adding cards to stack: {ex.Message}");
+            await transaction.RollbackAsync(); 
+            throw new Exception($"Error adding cards to deck: {ex.Message}");
         }
     }
+
 }

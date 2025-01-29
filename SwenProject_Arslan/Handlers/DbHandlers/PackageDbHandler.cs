@@ -12,9 +12,13 @@ namespace SwenProject_Arslan.DataAccess
     {
         private readonly string _connectionString;
 
-        public PackageDbHandler()
+        // Standardkonstruktor für Produktion
+        public PackageDbHandler() : this("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg") { }
+
+        // Konstruktor mit ConnectionString für Tests
+        public PackageDbHandler(string connectionString)
         {
-            _connectionString = "Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg";
+            _connectionString = connectionString;
         }
 
         /// <summary>
@@ -41,9 +45,9 @@ namespace SwenProject_Arslan.DataAccess
             return packageId;
         }
 
-        public async Task<int> SelectLatestPackageAsync()
+        public async Task<int> SelectPackageAsync()
         {
-            const string query = "SELECT id FROM Package WHERE isOpened = false ORDER BY id DESC LIMIT 1;";
+            const string query = "SELECT id FROM Package WHERE isOpened = false ORDER BY id ASC LIMIT 1;";
             
             await using var connection = new NpgsqlConnection(_connectionString);
             await connection.OpenAsync();
@@ -57,7 +61,7 @@ namespace SwenProject_Arslan.DataAccess
                 {
                     return reader.GetInt32(0);
                 }
-                throw new Exception($"No package found");
+                throw new Exception($"No package found.");
             }
             catch (Exception ex)
             {
