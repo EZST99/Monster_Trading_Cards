@@ -6,9 +6,13 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ATCPListener_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E2_003Fresharper_002Dhost_003FSourcesCache_003F9ff715fe53ecfa99c6eb750b33937870d875879385f3513ae2d707a47dfb7_003FTCPListener_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=98B04D86_002D9A64_002D4FAD_002DA183_002DFB0EB1582B80_002Ff_003AProgram_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=37e4566e_002Db038_002D4960_002D8fb6_002D850d0e56f73c/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="UserTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;NUnit3x::8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF::net8.0::CardTests&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+  &lt;Or&gt;&#xD;
+    &lt;TestAncestor&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF::net8.0::CardTests&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF::net8.0::Unittests_Arslan.PackageTests&lt;/TestId&gt;&#xD;
+    &lt;/TestAncestor&gt;&#xD;
+    &lt;ProjectFile&gt;8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF/f:UserTests.cs&lt;/ProjectFile&gt;&#xD;
+  &lt;/Or&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=617f699b_002De003_002D412f_002Db92a_002D4aeb395081ee/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Create_Should_Throw_Exception_If_User_Already_Exists" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;

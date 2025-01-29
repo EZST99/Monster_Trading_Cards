@@ -3,13 +3,15 @@ using SwenProject_Arslan.Handlers.DbHandlers;
 using SwenProject_Arslan.Models;
 using SwenProject_Arslan.Models.Cards;
 
+namespace Unittests_Arslan;
+
 [TestFixture]
 public class CardTests
 {
     [SetUp]
     public async Task Setup()
     {
-   
+        
     }
 
     [Test]

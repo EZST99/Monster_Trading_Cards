@@ -17,12 +17,14 @@ public class Package
     {
         var packageDbHandler = DbHandlerFactory.GetPackageDbHandler();
         var cardDbHandler = DbHandlerFactory.GetCardDbHandler();
+        if (cards == null || cards.Count == 0)
+        {
+            throw new ArgumentException("No cards were provided");
+        }
         try
         {
-            // Schritt 1: Paket erstellen und die ID abrufen
             int packageId = await packageDbHandler.CreatePackageAsync();
 
-            // Schritt 2: packageId an jede Karte anhängen
             foreach (var card in cards)
             {
                 card.PackageId = packageId;

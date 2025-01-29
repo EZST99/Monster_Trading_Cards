@@ -10,7 +10,7 @@ namespace SwenProject_Arslan.Models
         private User _Player2;
         private List<Card> _DeckPlayer1;
         private List<Card> _DeckPlayer2;
-        private List<string> _BattleLog = new(); // Ändere von string zu List<string>
+        private List<string> _BattleLog = new(); 
 
         public Battle() {}
 
@@ -23,22 +23,46 @@ namespace SwenProject_Arslan.Models
             _DeckPlayer2 = await User.GetUserDeck(_Player2.UserName);
 
             _BattleLog.Add($"The battle between {_Player1.UserName} and {_Player2.UserName} has started!");
-            for (int i = 0; i < 100; i++)
+            
+            // Mandatory Unique Feature
+            Random random = new();
+            int result = random.Next(2); 
+            if (result == 0)
             {
-                if (_DeckPlayer1.Count == 0 || _DeckPlayer2.Count == 0)
-                {
-                    _BattleLog.Add("<---- Battle Over ---->");
-                    _BattleLog.Add(_DeckPlayer1.Count > 0 ? $"{_Player1.UserName} wins!" : $"{_Player2.UserName} wins!");
-                    break;
-                }
-
+                _Player1.ELO += 1;
+                _BattleLog.Add($"{_Player1.UserName} gets 1 extra ELO point!");
+            }
+            else
+            {
+                _Player2.ELO += 1;
+                _BattleLog.Add($"{_Player2.UserName} gets 1 extra ELO point!");
+            }
+            int round = 1;
+            while (_DeckPlayer1.Count > 0 && _DeckPlayer2.Count > 0 && round <= 100)
+            {
+                _BattleLog.Add($"Round {round}: ");
                 await StartRound();
+                round++;
+            }
+
+            _BattleLog.Add("<---- Battle Over ---->");
+            if (_DeckPlayer1.Count > 0)
+            {
+                _BattleLog.Add($"{_Player1.UserName} wins!");
+                _Player1.ELO += 5;
+                _Player2.ELO -= 3;
+            }
+            else
+            {
+                _BattleLog.Add($"{_Player2.UserName} wins!");
+                _Player2.ELO += 5;
+                _Player1.ELO -= 3;
             }
 
             await _Player1.Save(_Player1.UserName, null, null, null, _Player1.ELO, null);
             await _Player2.Save(_Player2.UserName, null, null, null, _Player2.ELO, null);
 
-            return _BattleLog.ToArray(); // Rückgabe als Array
+            return _BattleLog.ToArray();
         }
 
         private async Task StartRound()
