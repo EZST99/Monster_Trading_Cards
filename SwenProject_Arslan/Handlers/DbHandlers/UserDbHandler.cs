@@ -27,11 +27,6 @@ namespace SwenProject_Arslan.DataAccess
             _connectionString = connectionString;
         }
 
-        /*private static string ConvertToDatabaseColumnName(string propertyName)
-        {
-            return propertyName.ToLower();
-        }*/
-
         private async Task<bool> CheckIfUserExist(User user)
         {
             const string query = "SELECT COUNT(*) FROM \"user\" WHERE username = @username;";
@@ -39,7 +34,7 @@ namespace SwenProject_Arslan.DataAccess
             await connection.OpenAsync();
 
             await using var command = new NpgsqlCommand(query, connection);
-            command.Parameters.AddWithValue("@username", user.UserName); // "username" war falsch geschrieben
+            command.Parameters.AddWithValue("@username", user.UserName); 
 
             try
             {
@@ -52,9 +47,6 @@ namespace SwenProject_Arslan.DataAccess
             }
         }
 
-        /// <summary>
-        /// Creates a new user and inserts it into the database.
-        /// </summary>
         public async Task CreateUserAsync(User user)
         {
             if (await CheckIfUserExist(user))
@@ -82,9 +74,6 @@ namespace SwenProject_Arslan.DataAccess
             }
         }
 
-        /// <summary>
-        /// Updates properties of an existing user in the database.
-        /// </summary>
         public async Task UpdateUserAsync(string userName, string? name, string? bio, string? image, int? coins, int? elo)
         {
             var updateClauses = new List<string>();
@@ -150,11 +139,7 @@ namespace SwenProject_Arslan.DataAccess
                 throw new UserException($"Error updating user: {ex.Message}");
             }
         }
-
-
-        /// <summary>
-        /// Retrieves a user by their username.
-        /// </summary>
+        
         public async Task<User> GetUserByUserNameAsync(string userName) 
         {
             const string query = @"

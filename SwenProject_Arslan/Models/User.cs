@@ -74,12 +74,9 @@ namespace SwenProject_Arslan.Models
                 PasswordHash = HashPassword(password),
                 Coins = 20,
                 ELO = 100,
-                //Stack = new List<ICard>(),
-                //Deck = new List<ICard>()
             };
             try
             {
-                //await DbHandler.InsertAsync(user, "UserName");
                 var userDbHandler = DbHandlerFactory.GetUserDbHandler();
                 await userDbHandler.CreateUserAsync(user);
             }
@@ -92,7 +89,6 @@ namespace SwenProject_Arslan.Models
 
         public static async Task<User> GetUserByUserName(string userName)
         {
-            //return await DbHandler.GetByColumnAsync<User>("Username", userName);
             var userDbHandler = DbHandlerFactory.GetUserDbHandler();
             return await userDbHandler.GetUserByUserNameAsync(userName);
         }
@@ -158,7 +154,6 @@ namespace SwenProject_Arslan.Models
                 {
                     return false;
                 }
-                
             }
 
             return true;

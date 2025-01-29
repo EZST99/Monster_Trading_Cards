@@ -5,14 +5,10 @@ using SwenProject_Arslan.Models;
 
 namespace SwenProject_Arslan.DataAccess
 {
-    /// <summary>
-    /// Handles database operations for Package entities.
-    /// </summary>
     public class PackageDbHandler
     {
         private readonly string _connectionString;
 
-        // Standardkonstruktor für Produktion
         public PackageDbHandler() : this("Host=localhost;Username=mtcg_user;Password=1234;Database=mtcg") { }
 
         // Konstruktor mit ConnectionString für Tests
@@ -20,10 +16,7 @@ namespace SwenProject_Arslan.DataAccess
         {
             _connectionString = connectionString;
         }
-
-        /// <summary>
-        /// Creates a new package and inserts it into the database.
-        /// </summary>
+        
         public async Task<int> CreatePackageAsync()
         {
             int packageId;

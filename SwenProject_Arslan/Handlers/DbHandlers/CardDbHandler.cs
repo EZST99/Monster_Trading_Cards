@@ -70,13 +70,13 @@ public class CardDbHandler
             {
                 var card = new Card
                 {
-                    Id = reader.GetString(0),  // `id` ist VARCHAR
-                    PackageId = reader.GetInt32(1),  // `packageId` ist SERIAL/INTEGER
-                    Name = reader.GetString(2),  // `name` ist VARCHAR
-                    Damage = (float)reader.GetDouble(3),  // `damage` ist FLOAT
-                    ElementType = Enum.Parse<ElementType>(reader.GetString(4), true), // `elementType` ist VARCHAR
-                    IsMonster = reader.GetBoolean(5),  // `isMonster` ist BOOLEAN
-                    MonsterType = reader.IsDBNull(6) ? null : Enum.Parse<MonsterType>(reader.GetString(6), true) // `monsterType` ist VARCHAR oder NULL
+                    Id = reader.GetString(0),  
+                    PackageId = reader.GetInt32(1),  
+                    Name = reader.GetString(2), 
+                    Damage = (float)reader.GetDouble(3),  
+                    ElementType = Enum.Parse<ElementType>(reader.GetString(4), true), 
+                    IsMonster = reader.GetBoolean(5),  
+                    MonsterType = reader.IsDBNull(6) ? null : Enum.Parse<MonsterType>(reader.GetString(6), true) 
                 };
                 cards.Add(card);
             }

@@ -52,12 +52,9 @@ namespace SwenProject_Arslan.Server
 
             if (data.Contains("battle"))
             {
-                if (_WaitingClients.Contains(client))
+                if (!_WaitingClients.Contains(client))
                 {
                     // Methode schreiben
-                }
-                else
-                {
                     _WaitingClients.Enqueue(client);
                     _DataTemp.Enqueue(data);
 
@@ -81,53 +78,7 @@ namespace SwenProject_Arslan.Server
                 Incoming?.Invoke(this, new(client, data));
             }
         }
-
-       /* private async void HandleClient(TcpClient client)
-        {
-            NetworkStream? stream = null;
-            try
-            {
-                Console.WriteLine("New client connected.");
-
-                stream = client.GetStream();
-                string data = string.Empty;
-                byte[] buf = new byte[256];
-
-                // Lesen der Anfrage
-                while (client.Connected && stream.DataAvailable || string.IsNullOrWhiteSpace(data))
-                {
-                    int read = await stream.ReadAsync(buf, 0, buf.Length);
-                    if (read == 0) break; // Client hat die Verbindung geschlossen
-                    data += Encoding.ASCII.GetString(buf, 0, read);
-                }
-
-                if (string.IsNullOrWhiteSpace(data))
-                {
-                    Console.WriteLine("No data received. Closing connection.");
-                    return;
-                }
-
-                Console.WriteLine($"Request received:\n{data}");
-
-                // EventArgs erstellen und weiterleiten
-                HttpSvrEventArgs eventArgs = new(client, data);
-                Incoming?.Invoke(this, eventArgs);
-
-                // Sicherstellen, dass die Antwort verarbeitet wurde
-                Console.WriteLine("Request handled successfully.");
-            }
-            catch (ObjectDisposedException ex)
-            {
-                Console.WriteLine($"Client already disposed: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in HandleClient: {ex.Message}");
-            }
-        }*/
-
-
-
+        
         public void Stop()
         {
             Active = false;

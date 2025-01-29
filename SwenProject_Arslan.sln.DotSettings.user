@@ -10,6 +10,7 @@
     &lt;TestAncestor&gt;&#xD;
       &lt;TestId&gt;NUnit3x::8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF::net8.0::CardTests&lt;/TestId&gt;&#xD;
       &lt;TestId&gt;NUnit3x::8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF::net8.0::Unittests_Arslan.PackageTests&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;NUnit3x::8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF::net8.0::Unittests_Arslan.CardTests&lt;/TestId&gt;&#xD;
     &lt;/TestAncestor&gt;&#xD;
     &lt;ProjectFile&gt;8CEC99E4-5A8A-41E5-828D-B07CCE4FD0DF/f:UserTests.cs&lt;/ProjectFile&gt;&#xD;
   &lt;/Or&gt;&#xD;

@@ -6,7 +6,6 @@ using SwenProject_Arslan.Exceptions;
 using SwenProject_Arslan.Interfaces;
 using SwenProject_Arslan.Models;
 using SwenProject_Arslan.Models.Cards;
-using SwenProject_Arslan.Repositories;
 using SwenProject_Arslan.Server;
 
 namespace SwenProject_Arslan.Handlers
@@ -363,16 +362,15 @@ namespace SwenProject_Arslan.Handlers
 
                 try
                 {
-                    // Deck des Benutzers abrufen
                     var deck = await User.GetUserDeck(authenticatedUser.UserName);
 
                     if (deck == null || !deck.Any())
                     {
-                        e.Reply(HttpStatusCodes.OK, "[]"); // Leeres Deck zurückgeben
+                        e.Reply(HttpStatusCodes.OK, "[]");
                         return true;
                     }
 
-                    // Prüfen, ob `format=plain` gesetzt ist
+                    // Prüfen, ob "format=plain" gesetzt ist
                     var isPlainFormat = e.QueryParameters.TryGetValue("format", out var format) && format.Equals("plain", StringComparison.OrdinalIgnoreCase);
 
                     if (isPlainFormat)
@@ -383,7 +381,6 @@ namespace SwenProject_Arslan.Handlers
                     }
                     else
                     {
-                        // Deck als JSON zurückgeben
                         var cardsJson = JsonSerializer.Serialize(deck);
                         e.Reply(HttpStatusCodes.OK, cardsJson);
                     }

@@ -46,17 +46,21 @@ namespace SwenProject_Arslan.Models
             }
 
             _BattleLog.Add("<---- Battle Over ---->");
-            if (_DeckPlayer1.Count > 0)
+            if (_DeckPlayer2.Count <= 0)
             {
                 _BattleLog.Add($"{_Player1.UserName} wins!");
                 _Player1.ELO += 5;
                 _Player2.ELO -= 3;
             }
-            else
+            else if (_DeckPlayer1.Count <= 0)
             {
                 _BattleLog.Add($"{_Player2.UserName} wins!");
                 _Player2.ELO += 5;
                 _Player1.ELO -= 3;
+            }
+            else
+            {
+                _BattleLog.Add($"The battle ends with a tie!");
             }
 
             await _Player1.Save(_Player1.UserName, null, null, null, _Player1.ELO, null);
