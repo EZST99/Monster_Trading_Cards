@@ -44,24 +44,28 @@ namespace SwenProject_Arslan.Models
                 await StartRound();
                 round++;
             }
-
             _BattleLog.Add("<---- Battle Over ---->");
-            if (_DeckPlayer2.Count <= 0)
+
+            if (_DeckPlayer1.Count == _DeckPlayer2.Count)
+            {
+                _BattleLog.Add($"The battle ends with a tie!");
+            }
+
+            if (_DeckPlayer2.Count < _DeckPlayer1.Count)
             {
                 _BattleLog.Add($"{_Player1.UserName} wins!");
                 _Player1.ELO += 5;
                 _Player2.ELO -= 3;
             }
-            else if (_DeckPlayer1.Count <= 0)
+            else
             {
                 _BattleLog.Add($"{_Player2.UserName} wins!");
                 _Player2.ELO += 5;
                 _Player1.ELO -= 3;
             }
-            else
-            {
-                _BattleLog.Add($"The battle ends with a tie!");
-            }
+
+            _BattleLog.Add($"{_Player1.UserName} has {_DeckPlayer1.Count} cards left.");
+            _BattleLog.Add($"{_Player2.UserName} has {_DeckPlayer2.Count} cards.");
 
             await _Player1.Save(_Player1.UserName, null, null, null, _Player1.ELO, null);
             await _Player2.Save(_Player2.UserName, null, null, null, _Player2.ELO, null);
@@ -72,29 +76,40 @@ namespace SwenProject_Arslan.Models
         private async Task StartRound()
         {
             List<Card> currentCards = PickRandomCards();
-            float player1damage = currentCards[0].GetDamage(currentCards[1]);
-            float player2damage = currentCards[1].GetDamage(currentCards[0]);
+            Card cardPlayer1 = currentCards[0];
+            Card cardPlayer2 = currentCards[1];
 
-            _BattleLog.Add($"{_Player1.UserName} plays {currentCards[0].Name} dealing {player1damage} damage.");
-            _BattleLog.Add($"{_Player2.UserName} plays {currentCards[1].Name} dealing {player2damage} damage.");
+            float player1damage = cardPlayer1.GetDamage(cardPlayer2);
+            float player2damage = cardPlayer2.GetDamage(cardPlayer1);
+
+            _BattleLog.Add($"{_Player1.UserName} plays {cardPlayer1.Name} dealing {player1damage} damage.");
+            _BattleLog.Add($"{_Player2.UserName} plays {cardPlayer2.Name} dealing {player2damage} damage.");
 
             if (player1damage > player2damage)
             {
                 _BattleLog.Add($"{_Player1.UserName} wins the round!");
-                _DeckPlayer1.Add(currentCards[1]);
-                _DeckPlayer2.Remove(currentCards[1]);
+
+                _DeckPlayer2.Remove(cardPlayer2); // Erst vom Verlierer entfernen
+                _DeckPlayer1.Add(cardPlayer2); // Dann dem Gewinner hinzufügen
             }
             else if (player2damage > player1damage)
             {
                 _BattleLog.Add($"{_Player2.UserName} wins the round!");
-                _DeckPlayer2.Add(currentCards[0]);
-                _DeckPlayer1.Remove(currentCards[0]);
+
+                _DeckPlayer1.Remove(cardPlayer1);
+                _DeckPlayer2.Add(cardPlayer1);
             }
             else
             {
                 _BattleLog.Add("It's a tie!");
             }
+            
+            _BattleLog.Add($"{_Player1.UserName} has {_DeckPlayer1.Count} cards left.");
+            _BattleLog.Add($"{_Player2.UserName} has {_DeckPlayer2.Count} cards.");
+
         }
+
+
 
         private List<Card> PickRandomCards()
         {
